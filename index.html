@@ -221,9 +221,10 @@
     <footer>正确流程：原图去底 → 缩放至设定比例 → 贴近背景底部对齐绘制 | 支持缩放70%~150% | 垂直偏移-60~60px</footer>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script>
-(function(){
+<script type="module">
+import { removeBackground } from 'https://esm.run/@imgly/background-removal';
+import JSZip from 'https://esm.run/jszip';
+(async function(){
     const CANVAS_W = 1125, CANVAS_H = 519;
     const DECOS_FIXED    = { deco3:{x:439,y:67,width:617}, deco4:{x:720,y:449,width:340} };
     const DECO_LEFT_POS  = { x:537, y:330, width:215 };
@@ -240,22 +241,49 @@
     let productPairs = [];
     let generatedResults = [];
 
-    // ── 去白底，返回 canvas（保持原图尺寸）──────────────────────────
-    function removeWhiteBg(imgEl, threshold) {
+    // ── AI 抠图，返回 canvas（原图尺寸，背景透明）──────────────────────
+    // feather: 0~20，对抠图边缘做羽化处理，数值越大边缘越柔和
+    async function loadAndRemoveBg(file, feather = 0) {
+        const blob = await removeBackground(file, {
+            output: { format: 'image/png', quality: 1 },
+        });
+        const url = URL.createObjectURL(blob);
+        const img = await new Promise((res, rej) => {
+            const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url;
+        });
+        URL.revokeObjectURL(url);
+
         const c = document.createElement('canvas');
-        c.width = imgEl.naturalWidth || imgEl.width;
-        c.height = imgEl.naturalHeight || imgEl.height;
+        c.width = img.naturalWidth; c.height = img.naturalHeight;
         const ctx = c.getContext('2d');
-        ctx.drawImage(imgEl, 0, 0);
-        const d = ctx.getImageData(0, 0, c.width, c.height);
-        for (let i = 0; i < d.data.length; i += 4) {
-            if (d.data[i]>=threshold && d.data[i+1]>=threshold && d.data[i+2]>=threshold)
-                d.data[i+3] = 0;
+        ctx.drawImage(img, 0, 0);
+
+        // 边缘羽化：对 alpha 通道做均值模糊，减少锯齿毛边
+        if (feather > 0) {
+            const id = ctx.getImageData(0, 0, c.width, c.height);
+            const d = id.data, w = c.width, h = c.height;
+            const orig = new Uint8ClampedArray(d);
+            const r = Math.max(1, Math.round(feather / 3));
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    const idx = (y * w + x) * 4;
+                    if (orig[idx+3] === 0) continue;
+                    let sum = 0, cnt = 0;
+                    for (let dy = -r; dy <= r; dy++) {
+                        for (let dx = -r; dx <= r; dx++) {
+                            const nx = x+dx, ny = y+dy;
+                            if (nx>=0 && nx<w && ny>=0 && ny<h) {
+                                sum += orig[((ny*w+nx)*4)+3]; cnt++;
+                            }
+                        }
+                    }
+                    d[idx+3] = Math.round(sum / cnt);
+                }
+            }
+            ctx.putImageData(id, 0, 0);
         }
-        ctx.putImageData(d, 0, 0);
         return c;
     }
-
     // ── 把去白底 canvas 按参数绘制到预览 canvas 上 ──────────────────
     // scale: 0.7~1.5，offsetY: -60~60px
     // 图片以 PREVIEW_W 为基准缩放，底部对齐画框底部
@@ -274,19 +302,7 @@
         ctx.drawImage(noBgCanvas, dx, dy, drawW, drawH);
     }
 
-    // ── 上传图片并去白底，返回 noBgCanvas ────────────────────────────
-    async function loadAndRemoveBg(file, threshold) {
-        return new Promise((resolve, reject) => {
-            const url = URL.createObjectURL(file);
-            const img = new Image();
-            img.onload = () => {
-                URL.revokeObjectURL(url);
-                resolve(removeWhiteBg(img, threshold));
-            };
-            img.onerror = reject;
-            img.src = url;
-        });
-    }
+
 
     // ── 从预览 canvas 中截取最终合成用的图像 ─────────────────────────
     // 返回 { dataURL, w, h, offsetY }，其中 w=PREVIEW_W, h=PREVIEW_H
@@ -504,10 +520,10 @@
         <input type="file" class="pairAFile" accept="image/*">
         <div class="prod-preview-canvas-wrap">
             <canvas class="previewCanvasA" width="${PREVIEW_W}" height="${PREVIEW_H}"></canvas>
-            <div class="preview-hint">上传后自动去白底显示</div>
+            <div class="preview-hint">上传后自动 AI 抠图（首次需加载模型，约10秒）</div>
         </div>
         <div class="advanced-options adv-a" style="display:block; margin-top:10px;">
-            <div class="control-group"><label>去白阈值:</label><input type="range" min="200" max="255" value="245" class="threshold-slider"><input type="number" min="200" max="255" value="245" class="threshold-num"></div>
+            <div class="control-group"><label>边缘柔化:</label><input type="range" min="0" max="20" value="0" class="threshold-slider"><input type="number" min="0" max="20" value="0" class="threshold-num"></div>
             <div class="control-group"><label>缩放(%):</label><input type="range" min="30" max="150" value="100" step="1" class="scale-slider"><input type="number" min="30" max="150" value="100" step="1" class="scale-num"></div>
             <div class="control-group"><label>垂直偏移(px):</label><input type="range" min="-150" max="150" value="0" class="offset-slider"><input type="number" min="-150" max="150" value="0" class="offset-num"></div>
         </div>
@@ -519,10 +535,10 @@
         <input type="file" class="pairBFile" accept="image/*">
         <div class="prod-preview-canvas-wrap">
             <canvas class="previewCanvasB" width="${PREVIEW_W}" height="${PREVIEW_H}"></canvas>
-            <div class="preview-hint">上传后自动去白底显示</div>
+            <div class="preview-hint">上传后自动 AI 抠图（首次需加载模型，约10秒）</div>
         </div>
         <div class="advanced-options adv-b" style="display:block; margin-top:10px;">
-            <div class="control-group"><label>去白阈值:</label><input type="range" min="200" max="255" value="245" class="threshold-slider"><input type="number" min="200" max="255" value="245" class="threshold-num"></div>
+            <div class="control-group"><label>边缘柔化:</label><input type="range" min="0" max="20" value="0" class="threshold-slider"><input type="number" min="0" max="20" value="0" class="threshold-num"></div>
             <div class="control-group"><label>缩放(%):</label><input type="range" min="30" max="150" value="100" step="1" class="scale-slider"><input type="number" min="30" max="150" value="100" step="1" class="scale-num"></div>
             <div class="control-group"><label>垂直偏移(px):</label><input type="range" min="-150" max="150" value="0" class="offset-slider"><input type="number" min="-150" max="150" value="0" class="offset-num"></div>
         </div>
@@ -583,7 +599,7 @@
                 const reThreshold = async () => {
                     const fileInput = side==='a' ? aFile : bFile;
                     if(!fileInput.files.length) return;
-                    const noBg = await loadAndRemoveBg(fileInput.files[0], parseInt(tNum.value)||245);
+                    const noBg = await loadAndRemoveBg(fileInput.files[0], parseInt(tNum.value)||0);
                     if(side==='a') productPairs[i].noBgA = noBg;
                     else           productPairs[i].noBgB = noBg;
                     refresh();
@@ -597,8 +613,16 @@
 
             // 上传文件 → 立即去白底 → 绘入预览
             const handleFile = async (file, side, canvas, panel) => {
-                const threshold = parseInt(panel.querySelector('.threshold-num').value)||245;
-                const noBg = await loadAndRemoveBg(file, threshold);
+                // 显示 loading
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '14px system-ui';
+                ctx.textAlign = 'center';
+                ctx.fillText('AI 抠图中，请稍候…', canvas.width/2, canvas.height/2);
+                ctx.textAlign = 'left';
+                const feather = parseInt(panel.querySelector('.threshold-num').value)||0;
+                const noBg = await loadAndRemoveBg(file, feather);
                 const scale  = (parseFloat(panel.querySelector('.scale-num').value)||100) / 100;
                 const offset = parseInt(panel.querySelector('.offset-num').value)||0;
                 if(side==='a'){productPairs[i].noBgA=noBg;}
