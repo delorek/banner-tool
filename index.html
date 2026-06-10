@@ -277,7 +277,7 @@ import JSZip from 'https://esm.run/jszip';
     // ── 把去白底 canvas 按参数绘制到预览 canvas 上 ──────────────────
     // scale: 0.7~1.5，offsetY: -60~60px
     // 图片以 PREVIEW_W 为基准缩放，底部对齐画框底部
-    function drawToPreview(previewCanvas, noBgCanvas, scale, offsetY) {
+    function drawToPreview(previewCanvas, noBgCanvas, scale, offsetY, offsetX = 0) {
         const ctx = previewCanvas.getContext('2d');
         ctx.clearRect(0, 0, PREVIEW_W, PREVIEW_H);
 
@@ -285,8 +285,8 @@ import JSZip from 'https://esm.run/jszip';
         const drawW = Math.round(PREVIEW_W * scale);
         const drawH = Math.round(noBgCanvas.height * (drawW / noBgCanvas.width));
 
-        // 水平居中，垂直居中（加上用户垂直偏移）
-        const dx = (PREVIEW_W - drawW) / 2;
+        // 水平居中 + 横向偏移，垂直居中 + 垂直偏移
+        const dx = (PREVIEW_W - drawW) / 2 + offsetX;
         const dy = (PREVIEW_H - drawH) / 2 + offsetY;
 
         ctx.drawImage(noBgCanvas, dx, dy, drawW, drawH);
@@ -514,8 +514,9 @@ import JSZip from 'https://esm.run/jszip';
         </div>
         <div class="advanced-options adv-a" style="display:block; margin-top:10px;">
             <div class="control-group"><label>边缘柔化:</label><input type="range" min="0" max="20" value="0" class="threshold-slider"><input type="number" min="0" max="20" value="0" class="threshold-num"></div>
-            <div class="control-group"><label>缩放(%):</label><input type="range" min="30" max="150" value="100" step="1" class="scale-slider"><input type="number" min="30" max="150" value="100" step="1" class="scale-num"></div>
+            <div class="control-group"><label>缩放(%):</label><input type="range" min="30" max="200" value="100" step="1" class="scale-slider"><input type="number" min="30" max="200" value="100" step="1" class="scale-num"></div>
             <div class="control-group"><label>垂直偏移(px):</label><input type="range" min="-150" max="150" value="0" class="offset-slider"><input type="number" min="-150" max="150" value="0" class="offset-num"></div>
+            <div class="control-group"><label>横向偏移(px):</label><input type="range" min="-150" max="150" value="0" class="offsetx-slider"><input type="number" min="-150" max="150" value="0" class="offsetx-num"></div>
         </div>
     </div>
     <div class="item">
@@ -529,8 +530,9 @@ import JSZip from 'https://esm.run/jszip';
         </div>
         <div class="advanced-options adv-b" style="display:block; margin-top:10px;">
             <div class="control-group"><label>边缘柔化:</label><input type="range" min="0" max="20" value="0" class="threshold-slider"><input type="number" min="0" max="20" value="0" class="threshold-num"></div>
-            <div class="control-group"><label>缩放(%):</label><input type="range" min="30" max="150" value="100" step="1" class="scale-slider"><input type="number" min="30" max="150" value="100" step="1" class="scale-num"></div>
+            <div class="control-group"><label>缩放(%):</label><input type="range" min="30" max="200" value="100" step="1" class="scale-slider"><input type="number" min="30" max="200" value="100" step="1" class="scale-num"></div>
             <div class="control-group"><label>垂直偏移(px):</label><input type="range" min="-150" max="150" value="0" class="offset-slider"><input type="number" min="-150" max="150" value="0" class="offset-num"></div>
+            <div class="control-group"><label>横向偏移(px):</label><input type="range" min="-150" max="150" value="0" class="offsetx-slider"><input type="number" min="-150" max="150" value="0" class="offsetx-num"></div>
         </div>
     </div>
 </div>
@@ -551,8 +553,8 @@ import JSZip from 'https://esm.run/jszip';
             const panelB   = div.querySelector('.adv-b');
 
             // 恢复已有预览
-            if(p.noBgA) drawToPreview(canvasA, p.noBgA, (parseInt(panelA.querySelector('.scale-slider').value)||100)/100, parseInt(panelA.querySelector('.offset-slider').value)||0);
-            if(p.noBgB) drawToPreview(canvasB, p.noBgB, (parseInt(panelB.querySelector('.scale-slider').value)||100)/100, parseInt(panelB.querySelector('.offset-slider').value)||0);
+            if(p.noBgA) drawToPreview(canvasA, p.noBgA, (parseInt(panelA.querySelector('.scale-slider').value)||100)/100, parseInt(panelA.querySelector('.offset-slider').value)||0, parseInt(panelA.querySelector('.offsetx-slider').value)||0);
+            if(p.noBgB) drawToPreview(canvasB, p.noBgB, (parseInt(panelB.querySelector('.scale-slider').value)||100)/100, parseInt(panelB.querySelector('.offset-slider').value)||0, parseInt(panelB.querySelector('.offsetx-slider').value)||0);
 
             // 点击 canvas 放大查看
             canvasA.addEventListener('click', () => openLightbox(canvasA));
@@ -563,17 +565,20 @@ import JSZip from 'https://esm.run/jszip';
                 const tSlider = panel.querySelector('.threshold-slider'), tNum = panel.querySelector('.threshold-num');
                 const sSlider = panel.querySelector('.scale-slider'),     sNum = panel.querySelector('.scale-num');
                 const oSlider = panel.querySelector('.offset-slider'),    oNum = panel.querySelector('.offset-num');
+                const xSlider = panel.querySelector('.offsetx-slider'),   xNum = panel.querySelector('.offsetx-num');
 
                 bindSliderAndNumber(tSlider, tNum);
                 bindSliderAndNumber(sSlider, sNum);
                 bindSliderAndNumber(oSlider, oNum);
+                bindSliderAndNumber(xSlider, xNum);
 
                 const refresh = () => {
                     const noBg = side==='a' ? productPairs[i].noBgA : productPairs[i].noBgB;
                     if(!noBg) return;
-                    const scale  = (parseFloat(sNum.value)||100) / 100;
-                    const offset = parseInt(oNum.value)||0;
-                    drawToPreview(canvas, noBg, scale, offset);
+                    const scale   = (parseFloat(sNum.value)||100) / 100;
+                    const offset  = parseInt(oNum.value)||0;
+                    const offsetX = parseInt(xNum.value)||0;
+                    drawToPreview(canvas, noBg, scale, offset, offsetX);
                     // 同步快照供生成使用
                     if(side==='a') productPairs[i].snapshotA = snapshotPreview(canvas);
                     else           productPairs[i].snapshotB = snapshotPreview(canvas);
@@ -584,6 +589,8 @@ import JSZip from 'https://esm.run/jszip';
                 sNum.addEventListener('input', refresh);
                 oSlider.addEventListener('input', refresh);
                 oNum.addEventListener('input', refresh);
+                xSlider.addEventListener('input', refresh);
+                xNum.addEventListener('input', refresh);
 
                 // 阈值变化需要重新去白底（有文件才处理）
                 const reThreshold = async () => {
@@ -613,11 +620,12 @@ import JSZip from 'https://esm.run/jszip';
                 ctx.textAlign = 'left';
                 const feather = parseInt(panel.querySelector('.threshold-num').value)||0;
                 const noBg = await loadAndRemoveBg(file, feather);
-                const scale  = (parseFloat(panel.querySelector('.scale-num').value)||100) / 100;
-                const offset = parseInt(panel.querySelector('.offset-num').value)||0;
+                const scale   = (parseFloat(panel.querySelector('.scale-num').value)||100) / 100;
+                const offset  = parseInt(panel.querySelector('.offset-num').value)||0;
+                const offsetX = parseInt(panel.querySelector('.offsetx-num').value)||0;
                 if(side==='a'){productPairs[i].noBgA=noBg;}
                 else           {productPairs[i].noBgB=noBg;}
-                drawToPreview(canvas, noBg, scale, offset);
+                drawToPreview(canvas, noBg, scale, offset, offsetX);
                 const snap = snapshotPreview(canvas);
                 if(side==='a') productPairs[i].snapshotA=snap;
                 else           productPairs[i].snapshotB=snap;
