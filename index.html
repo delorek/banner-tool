@@ -248,7 +248,26 @@ import JSZip from 'https://esm.run/jszip';
         const ctx = c.getContext('2d');
         ctx.drawImage(img, 0, 0);
 
-        // 边缘羽化：对 alpha 通道做均值模糊，减少锯齿毛边
+        // 不透明度修复：消除 AI 抠图在浅色商品边缘产生的半透明虚化
+        // alpha < 30 → 完全透明；alpha > 180 → 完全不透明；中间区域线性映射
+        {
+            const id = ctx.getImageData(0, 0, c.width, c.height);
+            const d = id.data;
+            for (let i = 3; i < d.length; i += 4) {
+                const a = d[i];
+                if (a < 30) {
+                    d[i] = 0;
+                } else if (a > 180) {
+                    d[i] = 255;
+                } else {
+                    // 将 30~180 映射到 0~255，让过渡区域快速收敛到不透明
+                    d[i] = Math.round((a - 30) / (180 - 30) * 255);
+                }
+            }
+            ctx.putImageData(id, 0, 0);
+        }
+
+        // 边缘羽化：对 alpha 通道做均值模糊，减少锯齿毛边（在修复之后做，保证边缘平滑）
         if (feather > 0) {
             const id = ctx.getImageData(0, 0, c.width, c.height);
             const d = id.data, w = c.width, h = c.height;
