@@ -294,12 +294,18 @@ import JSZip from 'https://esm.run/jszip';
         return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
     }
 
-    // ── 计算自动填充缩放比例（宽度撑满画框）────────────────────────
+    // ── 计算自动填充缩放比例（宽度撑满，若超高则改用高度适配）────────
     function calcAutoScale(noBgCanvas) {
         const bounds = getTrimBounds(noBgCanvas);
         if (!bounds) return 1;
-        // 以商品实际宽度为基准，缩放到撑满 PREVIEW_W
-        return PREVIEW_W / bounds.w;
+        const scaleByW = PREVIEW_W / bounds.w;
+        // 检查按宽度缩放后高度是否超出画框
+        const scaledH = bounds.h * scaleByW;
+        if (scaledH <= PREVIEW_H) {
+            return scaleByW;  // 宽度撑满且高度不超出，直接用
+        }
+        // 高度超出，改用高度适配（保证图片完整显示）
+        return PREVIEW_H / bounds.h;
     }
 
     // ── 把去白底 canvas 按参数绘制到预览 canvas 上 ──────────────────
@@ -602,8 +608,8 @@ import JSZip from 'https://esm.run/jszip';
             canvasB.addEventListener('click', () => openLightbox(canvasB));
 
             // 精细调整折叠/展开
-            div.querySelector('.adv-toggle-a').addEventListener('click', () => advPanelA.classList.toggle('show'));
-            div.querySelector('.adv-toggle-b').addEventListener('click', () => advPanelB.classList.toggle('show'));
+            div.querySelector('.adv-toggle-a').addEventListener('click', () => panelA.classList.toggle('show'));
+            div.querySelector('.adv-toggle-b').addEventListener('click', () => panelB.classList.toggle('show'));
 
             // 滑块联动 + 实时刷新预览
             const bindPanel = (panel, canvas, side) => {
