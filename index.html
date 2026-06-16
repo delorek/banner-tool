@@ -698,9 +698,32 @@ import JSZip from 'https://esm.run/jszip';
 
                 let noBg;
                 const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
-                if (isPng) {
-                    // PNG 直接加载，跳过 AI 抠图
-                    ctx.fillText('PNG 已识别，跳过抠图…', canvas.width/2, canvas.height/2);
+
+                // 检测图片是否真的有透明像素，而非仅靠文件格式判断
+                const hasTransparency = isPng && await new Promise(res => {
+                    const url = URL.createObjectURL(file);
+                    const img = new Image();
+                    img.onload = () => {
+                        URL.revokeObjectURL(url);
+                        const c = document.createElement('canvas');
+                        c.width = img.naturalWidth; c.height = img.naturalHeight;
+                        const ctx2 = c.getContext('2d');
+                        ctx2.drawImage(img, 0, 0);
+                        const d = ctx2.getImageData(0, 0, c.width, c.height).data;
+                        // 采样检测：每隔若干像素检查一次 alpha，发现透明像素即判定有透明背景
+                        const step = 4 * 8; // 每8个像素采样一次
+                        for (let i = 3; i < d.length; i += step) {
+                            if (d[i] < 250) { res(true); return; }
+                        }
+                        res(false);
+                    };
+                    img.onerror = () => res(false);
+                    img.src = url;
+                });
+
+                if (hasTransparency) {
+                    // 已有透明背景，直接加载跳过 AI 抠图
+                    ctx.fillText('PNG 透明背景已识别，跳过抠图…', canvas.width/2, canvas.height/2);
                     ctx.textAlign = 'left';
                     noBg = await new Promise((res, rej) => {
                         const url = URL.createObjectURL(file);
@@ -716,7 +739,7 @@ import JSZip from 'https://esm.run/jszip';
                         img.src = url;
                     });
                 } else {
-                    // 非 PNG 走 AI 抠图流程
+                    // 无透明像素（白底 PNG 或其他格式），走 AI 抠图流程
                     ctx.fillText('AI 抠图中，请稍候…', canvas.width/2, canvas.height/2);
                     ctx.textAlign = 'left';
                     const feather = parseInt(panel.querySelector('.threshold-num').value)||0;
