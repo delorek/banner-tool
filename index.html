@@ -274,22 +274,57 @@ import JSZip from 'https://esm.run/jszip';
         }
         return c;
     }
+    // ── 裁剪透明边缘，返回商品实际像素的边界 rect ─────────────────
+    function getTrimBounds(canvas) {
+        const ctx = canvas.getContext('2d');
+        const { width: w, height: h } = canvas;
+        const d = ctx.getImageData(0, 0, w, h).data;
+        let minX = w, minY = h, maxX = 0, maxY = 0;
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                if (d[(y * w + x) * 4 + 3] > 10) {  // alpha > 10 视为有内容
+                    if (x < minX) minX = x;
+                    if (x > maxX) maxX = x;
+                    if (y < minY) minY = y;
+                    if (y > maxY) maxY = y;
+                }
+            }
+        }
+        if (maxX < minX) return null;  // 全透明
+        return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+    }
+
+    // ── 计算自动填充缩放比例（宽度撑满画框）────────────────────────
+    function calcAutoScale(noBgCanvas) {
+        const bounds = getTrimBounds(noBgCanvas);
+        if (!bounds) return 1;
+        // 以商品实际宽度为基准，缩放到撑满 PREVIEW_W
+        return PREVIEW_W / bounds.w;
+    }
+
     // ── 把去白底 canvas 按参数绘制到预览 canvas 上 ──────────────────
-    // scale: 0.7~1.5，offsetY: -60~60px
-    // 图片以 PREVIEW_W 为基准缩放，底部对齐画框底部
+    // scale 基于商品实际宽度（已裁剪透明边缘），offsetY/offsetX 为微调
     function drawToPreview(previewCanvas, noBgCanvas, scale, offsetY, offsetX = 0) {
         const ctx = previewCanvas.getContext('2d');
         ctx.clearRect(0, 0, PREVIEW_W, PREVIEW_H);
 
-        // 以 PREVIEW_W 为 100% 基准，乘以用户缩放比例
-        const drawW = Math.round(PREVIEW_W * scale);
-        const drawH = Math.round(noBgCanvas.height * (drawW / noBgCanvas.width));
+        const bounds = getTrimBounds(noBgCanvas);
+        if (!bounds) return;
 
-        // 水平居中 + 横向偏移，垂直居中 + 垂直偏移
+        // 商品实际内容区域缩放后的尺寸
+        const drawW = Math.round(bounds.w * scale);
+        const drawH = Math.round(bounds.h * scale);
+
+        // 水平居中 + 横向偏移，底部对齐 + 垂直偏移
         const dx = (PREVIEW_W - drawW) / 2 + offsetX;
-        const dy = (PREVIEW_H - drawH) / 2 + offsetY;
+        const dy = PREVIEW_H - drawH + offsetY;
 
-        ctx.drawImage(noBgCanvas, dx, dy, drawW, drawH);
+        // 只绘制商品内容区域（跳过透明边缘），避免内容实际宽度小于画框
+        ctx.drawImage(
+            noBgCanvas,
+            bounds.x, bounds.y, bounds.w, bounds.h,  // 源：商品实际区域
+            dx, dy, drawW, drawH                       // 目标：画框中的位置和尺寸
+        );
     }
 
 
@@ -512,7 +547,10 @@ import JSZip from 'https://esm.run/jszip';
             <canvas class="previewCanvasA" width="${PREVIEW_W}" height="${PREVIEW_H}"></canvas>
             <div class="preview-hint">上传后自动 AI 抠图（首次需加载模型，约10秒）</div>
         </div>
-        <div class="advanced-options adv-a" style="display:block; margin-top:10px;">
+        <div style="margin-top:8px;">
+            <span class="advanced-toggle adv-toggle-a" style="font-size:0.72rem;color:#667eea;cursor:pointer;">🔧 精细调整（可选）</span>
+        </div>
+        <div class="advanced-options adv-a" style="margin-top:8px;">
             <div class="control-group"><label>边缘柔化:</label><input type="range" min="0" max="20" value="0" class="threshold-slider"><input type="number" min="0" max="20" value="0" class="threshold-num"></div>
             <div class="control-group"><label>缩放(%):</label><input type="range" min="30" max="200" value="100" step="1" class="scale-slider"><input type="number" min="30" max="200" value="100" step="1" class="scale-num"></div>
             <div class="control-group"><label>垂直偏移(px):</label><input type="range" min="-150" max="150" value="0" class="offset-slider"><input type="number" min="-150" max="150" value="0" class="offset-num"></div>
@@ -528,7 +566,10 @@ import JSZip from 'https://esm.run/jszip';
             <canvas class="previewCanvasB" width="${PREVIEW_W}" height="${PREVIEW_H}"></canvas>
             <div class="preview-hint">上传后自动 AI 抠图（首次需加载模型，约10秒）</div>
         </div>
-        <div class="advanced-options adv-b" style="display:block; margin-top:10px;">
+        <div style="margin-top:8px;">
+            <span class="advanced-toggle adv-toggle-b" style="font-size:0.72rem;color:#667eea;cursor:pointer;">🔧 精细调整（可选）</span>
+        </div>
+        <div class="advanced-options adv-b" style="margin-top:8px;">
             <div class="control-group"><label>边缘柔化:</label><input type="range" min="0" max="20" value="0" class="threshold-slider"><input type="number" min="0" max="20" value="0" class="threshold-num"></div>
             <div class="control-group"><label>缩放(%):</label><input type="range" min="30" max="200" value="100" step="1" class="scale-slider"><input type="number" min="30" max="200" value="100" step="1" class="scale-num"></div>
             <div class="control-group"><label>垂直偏移(px):</label><input type="range" min="-150" max="150" value="0" class="offset-slider"><input type="number" min="-150" max="150" value="0" class="offset-num"></div>
@@ -559,6 +600,10 @@ import JSZip from 'https://esm.run/jszip';
             // 点击 canvas 放大查看
             canvasA.addEventListener('click', () => openLightbox(canvasA));
             canvasB.addEventListener('click', () => openLightbox(canvasB));
+
+            // 精细调整折叠/展开
+            div.querySelector('.adv-toggle-a').addEventListener('click', () => advPanelA.classList.toggle('show'));
+            div.querySelector('.adv-toggle-b').addEventListener('click', () => advPanelB.classList.toggle('show'));
 
             // 滑块联动 + 实时刷新预览
             const bindPanel = (panel, canvas, side) => {
@@ -620,12 +665,21 @@ import JSZip from 'https://esm.run/jszip';
                 ctx.textAlign = 'left';
                 const feather = parseInt(panel.querySelector('.threshold-num').value)||0;
                 const noBg = await loadAndRemoveBg(file, feather);
-                const scale   = (parseFloat(panel.querySelector('.scale-num').value)||100) / 100;
-                const offset  = parseInt(panel.querySelector('.offset-num').value)||0;
-                const offsetX = parseInt(panel.querySelector('.offsetx-num').value)||0;
+                // 自动计算宽度撑满的缩放比例，并写入滑块
+                const autoScale = calcAutoScale(noBg);
+                const autoScalePct = Math.round(autoScale * 100);
+                panel.querySelector('.scale-slider').value = autoScalePct;
+                panel.querySelector('.scale-num').value = autoScalePct;
+                // 重置偏移
+                panel.querySelector('.offset-slider').value = 0;
+                panel.querySelector('.offset-num').value = 0;
+                panel.querySelector('.offsetx-slider').value = 0;
+                panel.querySelector('.offsetx-num').value = 0;
+                const offset  = 0;
+                const offsetX = 0;
                 if(side==='a'){productPairs[i].noBgA=noBg;}
                 else           {productPairs[i].noBgB=noBg;}
-                drawToPreview(canvas, noBg, scale, offset, offsetX);
+                drawToPreview(canvas, noBg, autoScale, offset, offsetX);
                 const snap = snapshotPreview(canvas);
                 if(side==='a') productPairs[i].snapshotA=snap;
                 else           productPairs[i].snapshotB=snap;
