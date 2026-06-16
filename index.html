@@ -570,10 +570,12 @@ import JSZip from 'https://esm.run/jszip';
         <input type="file" class="pairAFile" accept="image/*">
         <div class="prod-preview-canvas-wrap">
             <canvas class="previewCanvasA" width="${PREVIEW_W}" height="${PREVIEW_H}"></canvas>
-            <div class="preview-hint">上传后自动 AI 抠图（首次需加载模型，约10秒）</div>
-        </div>
-        <div style="margin-top:8px;">
-            <span class="advanced-toggle adv-toggle-a" style="font-size:0.72rem;color:#667eea;cursor:pointer;">🔧 精细调整（可选）</span>
+            <div class="preview-hint">
+                上传后自动 AI 抠图（首次需加载模型约10秒）<br>
+                抠图效果不理想？先去
+                <a href="https://www.doubao.com/chat/" target="_blank" style="color:#667eea;text-decoration:none;">豆包 AI ↗</a>
+                抠图后下载 PNG 再上传，自动跳过抠图 ✨
+            </div> style="font-size:0.72rem;color:#667eea;cursor:pointer;">🔧 精细调整（可选）</span>
         </div>
         <div class="advanced-options adv-a" style="margin-top:8px;">
             <div class="control-group"><label>边缘柔化:</label><input type="range" min="0" max="20" value="0" class="threshold-slider"><input type="number" min="0" max="20" value="0" class="threshold-num"></div>
@@ -589,10 +591,12 @@ import JSZip from 'https://esm.run/jszip';
         <input type="file" class="pairBFile" accept="image/*">
         <div class="prod-preview-canvas-wrap">
             <canvas class="previewCanvasB" width="${PREVIEW_W}" height="${PREVIEW_H}"></canvas>
-            <div class="preview-hint">上传后自动 AI 抠图（首次需加载模型，约10秒）</div>
-        </div>
-        <div style="margin-top:8px;">
-            <span class="advanced-toggle adv-toggle-b" style="font-size:0.72rem;color:#667eea;cursor:pointer;">🔧 精细调整（可选）</span>
+            <div class="preview-hint">
+                上传后自动 AI 抠图（首次需加载模型约10秒）<br>
+                抠图效果不理想？先去
+                <a href="https://www.doubao.com/chat/" target="_blank" style="color:#667eea;text-decoration:none;">豆包 AI ↗</a>
+                抠图后下载 PNG 再上传，自动跳过抠图 ✨
+            </div> style="font-size:0.72rem;color:#667eea;cursor:pointer;">🔧 精细调整（可选）</span>
         </div>
         <div class="advanced-options adv-b" style="margin-top:8px;">
             <div class="control-group"><label>边缘柔化:</label><input type="range" min="0" max="20" value="0" class="threshold-slider"><input type="number" min="0" max="20" value="0" class="threshold-num"></div>
@@ -680,16 +684,38 @@ import JSZip from 'https://esm.run/jszip';
 
             // 上传文件 → 立即去白底 → 绘入预览
             const handleFile = async (file, side, canvas, panel) => {
-                // 显示 loading
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = '#94a3b8';
                 ctx.font = '14px system-ui';
                 ctx.textAlign = 'center';
-                ctx.fillText('AI 抠图中，请稍候…', canvas.width/2, canvas.height/2);
-                ctx.textAlign = 'left';
-                const feather = parseInt(panel.querySelector('.threshold-num').value)||0;
-                const noBg = await loadAndRemoveBg(file, feather);
+
+                let noBg;
+                const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
+                if (isPng) {
+                    // PNG 直接加载，跳过 AI 抠图
+                    ctx.fillText('PNG 已识别，跳过抠图…', canvas.width/2, canvas.height/2);
+                    ctx.textAlign = 'left';
+                    noBg = await new Promise((res, rej) => {
+                        const url = URL.createObjectURL(file);
+                        const img = new Image();
+                        img.onload = () => {
+                            URL.revokeObjectURL(url);
+                            const c = document.createElement('canvas');
+                            c.width = img.naturalWidth; c.height = img.naturalHeight;
+                            c.getContext('2d').drawImage(img, 0, 0);
+                            res(c);
+                        };
+                        img.onerror = rej;
+                        img.src = url;
+                    });
+                } else {
+                    // 非 PNG 走 AI 抠图流程
+                    ctx.fillText('AI 抠图中，请稍候…', canvas.width/2, canvas.height/2);
+                    ctx.textAlign = 'left';
+                    const feather = parseInt(panel.querySelector('.threshold-num').value)||0;
+                    noBg = await loadAndRemoveBg(file, feather);
+                }
                 // 自动计算宽度撑满的缩放比例，并写入滑块
                 const autoScale = calcAutoScale(noBg);
                 const autoScalePct = Math.round(autoScale * 100);
