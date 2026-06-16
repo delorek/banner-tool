@@ -732,7 +732,12 @@ import JSZip from 'https://esm.run/jszip';
                             URL.revokeObjectURL(url);
                             const c = document.createElement('canvas');
                             c.width = img.naturalWidth; c.height = img.naturalHeight;
-                            c.getContext('2d').drawImage(img, 0, 0);
+                            const ctx2 = c.getContext('2d');
+                            ctx2.drawImage(img, 0, 0);
+                            // 自动裁除豆包水印：右下角约 20% 宽 × 8% 高区域设为透明
+                            const wmX = Math.floor(c.width * 0.80);
+                            const wmY = Math.floor(c.height * 0.92);
+                            ctx2.clearRect(wmX, wmY, c.width - wmX, c.height - wmY);
                             res(c);
                         };
                         img.onerror = rej;
