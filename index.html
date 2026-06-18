@@ -216,9 +216,9 @@ import { removeBackground } from 'https://esm.run/@imgly/background-removal';
 import JSZip from 'https://esm.run/jszip';
 (async function(){
     const CANVAS_W = 1125, CANVAS_H = 519;
-    const DECOS_FIXED    = { deco3:{x:439,y:67,width:617}, deco4:{x:720,y:449,width:340} };
-    const DECO_LEFT_POS  = { x:537, y:330, width:215 };
-    const DECO_RIGHT_POS = { x:895, y:307, width:209 };
+    const DECOS_FIXED    = { deco3:{x:0,y:0,width:1125}, deco4:{x:720,y:449,width:340} };
+    const DECO_LEFT_POS  = { x:537, y:307, width:210 };
+    const DECO_RIGHT_POS = { x:895, y:307, width:210 };
     // 预览画框尺寸（与最终合成商品槽保持一致）
     const PREVIEW_W = 268, PREVIEW_H = 300;
     const RIGHT_MARGIN = 234, BOTTOM_MARGIN = 21, PROD2_OFFSET_X = 138;
@@ -463,7 +463,38 @@ import JSZip from 'https://esm.run/jszip';
             }
         }
         if(subText) drawSubtitleWithHighlight(ctx,subText,SUBTITLE_POS.x,SUBTITLE_POS.y,globalStyle.subSize,globalStyle.subColor,highlightWords,globalStyle.highlightColor);
-        return canvas.toDataURL('image/png');
+
+        // ──压缩至不超过 300KB──────────────────────────────────────
+        return await new Promise(res => {
+            const compressBlob = (blob, format, quality) => {
+                if(blob.size <= 300 * 1024) {
+                    const reader = new FileReader();
+                    reader.onload = () => res(reader.result);
+                    reader.readAsDataURL(blob);
+                } else if(format === 'image/png') {
+                    // PNG 超大，转换为 JPEG
+                    const c2 = document.createElement('canvas');
+                    c2.width = CANVAS_W; c2.height = CANVAS_H;
+                    const ctx2 = c2.getContext('2d');
+                    ctx2.drawImage(canvas, 0, 0);
+                    c2.toBlob(blob2 => compressBlob(blob2, 'image/jpeg', 0.85), 'image/jpeg', 0.85);
+                } else {
+                    // JPEG 还是超大，降低质量重试
+                    if(quality <= 0.5) {
+                        const reader = new FileReader();
+                        reader.onload = () => res(reader.result);
+                        reader.readAsDataURL(blob);
+                    } else {
+                        const c2 = document.createElement('canvas');
+                        c2.width = CANVAS_W; c2.height = CANVAS_H;
+                        const ctx2 = c2.getContext('2d');
+                        ctx2.drawImage(canvas, 0, 0);
+                        c2.toBlob(blob2 => compressBlob(blob2, format, quality - 0.1), format, quality - 0.1);
+                    }
+                }
+            };
+            canvas.toBlob(blob => compressBlob(blob, 'image/png'), 'image/png');
+        });
     }
 
     async function batchGenerate() {
@@ -526,7 +557,14 @@ import JSZip from 'https://esm.run/jszip';
     setPoolPreview('rightPool2','previewRight2',rightPool,1);
 
     document.getElementById('deco3').addEventListener('change', async e=>{
-        if(e.target.files[0]){deco3Img=await processNormalImage(e.target.files[0],800);document.getElementById('previewDeco3').innerHTML=`<div class="preview-thumb"><img src="${deco3Img.src}"></div>`;}
+        if(e.target.files[0]){
+            // deco3 缩放至 1125x519（画布等大小）
+            const fullImg = await processNormalImage(e.target.files[0], 1125);
+            deco3Img = fullImg;
+            // 预览显示缩小版
+            const thumbImg = await processNormalImage(e.target.files[0], 200);
+            document.getElementById('previewDeco3').innerHTML=`<div class="preview-thumb"><img src="${thumbImg.src}"></div>`;
+        }
         else{deco3Img=null;document.getElementById('previewDeco3').innerHTML='';}
     });
 
@@ -614,7 +652,7 @@ import JSZip from 'https://esm.run/jszip';
 </div>
 <div class="pair-text-config">
     <div class="text-config-section">
-        <div class="text-block"><div class="text-block-title">📝 主标题</div><input type="text" class="text-input pairMainTitle" placeholder="例如：520新品 心动季" value="${escapeHtml(p.mainTitle||'')}"></div>
+        <div class="text-block"><div class="text-block-title">📝 主标题（最多8字）</div><input type="text" class="text-input pairMainTitle" placeholder="例如：520新品" maxlength="8" value="${escapeHtml(p.mainTitle||'')}"></div>
         <div class="text-block"><div class="text-block-title">📝 副标题</div><input type="text" class="text-input pairSubTitle" placeholder="例如：满额400 享12期免息" value="${escapeHtml(p.subTitle||'')}"></div>
         <div class="text-block"><div class="text-block-title">✨ 高亮词（逗号分隔）</div><input type="text" class="text-input pairHighlightWords" placeholder="例如：400,12期免息" value="${escapeHtml(p.highlightWords||'')}"></div>
     </div>
