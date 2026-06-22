@@ -145,14 +145,25 @@
             padding: 10px 12px; margin-top: 14px;
         }
 
-        /* ── 生成按钮 ── */
+        /* ── 按钮区 ── */
+        .btn-row {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px;
+        }
         .gen-btn {
-            width: 100%; padding: 13px; background: #06805c; color: white;
+            padding: 13px; background: #06805c; color: white;
             border: none; border-radius: 8px; font-size: 14px; font-weight: 700;
-            cursor: pointer; transition: background 0.2s; margin-top: 4px;
+            cursor: pointer; transition: background 0.2s;
         }
         .gen-btn:hover { background: #056b4a; }
         .gen-btn:active { background: #044f37; }
+        .dl-btn {
+            padding: 13px; background: #313133; color: white;
+            border: none; border-radius: 8px; font-size: 14px; font-weight: 700;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .dl-btn:hover { background: #444446; }
+        .dl-btn:active { background: #1e1e1f; }
+        .dl-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
         /* ── 右侧画布 ── */
         .right-panel {
@@ -348,8 +359,11 @@
             </div>
         </div>
 
-        <!-- 生成按钮 -->
-        <button class="gen-btn" id="generateBtn">生成头图</button>
+        <!-- 按钮区 -->
+        <div class="btn-row">
+            <button class="gen-btn" id="generateBtn">生成头图</button>
+            <button class="dl-btn" id="downloadBtn" disabled>下载</button>
+        </div>
     </div>
 
     <!-- ══ 右侧画布 ══ -->
@@ -391,10 +405,11 @@ import { removeBackground } from 'https://esm.run/@imgly/background-removal';
 // ═══════════════════════════════════════════════════
 const CANVAS_W = 1125, CANVAS_H = 519;
 const DECO4_POS      = { x: 720,  y: 449, width: 340 };
-const DECO_LEFT_POS  = { x: 537,  y: 307, width: 210 };
+const DECO_LEFT_POS  = { x: 531,  y: 307, width: 210 };
 const DECO_RIGHT_POS = { x: 895,  y: 307, width: 210 };
 const PREVIEW_W = 268, PREVIEW_H = 300;
-const RIGHT_MARGIN = 234, BOTTOM_MARGIN = 21, PROD2_OFFSET_X = 138;
+const PROD_A_POS = { x: 607, y: 198 };
+const PROD_B_POS = { x: 780, y: 198 };
 const TITLE_POS    = { x: 42, y: 268 };
 const SUBTITLE_POS = { x: 42, y: 370 };
 
@@ -605,10 +620,10 @@ function bindProductUpload(side) {
 
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, PREVIEW_W, PREVIEW_H);
-        ctx.fillStyle = '#ccc';
-        ctx.font = '12px system-ui';
+        ctx.fillStyle = '#aaa';
+        ctx.font = '14px system-ui';
         ctx.textAlign = 'center';
-        ctx.fillText('处理中…', PREVIEW_W / 2, PREVIEW_H / 2);
+        ctx.fillText('处理中，加载模型约10秒', PREVIEW_W / 2, PREVIEW_H / 2);
         ctx.textAlign = 'left';
 
         try {
@@ -695,10 +710,8 @@ async function generate() {
         const img = new Image(); img.onload = () => { ctx.drawImage(img, x, y, snap.w, snap.h); res(); };
         img.src = snap.dataURL;
     });
-    const ax = CANVAS_W - RIGHT_MARGIN - products.A.snapshot.w;
-    const ay = CANVAS_H - BOTTOM_MARGIN - products.A.snapshot.h;
-    await drawSnap(products.A.snapshot, ax, ay);
-    await drawSnap(products.B.snapshot, ax + PROD2_OFFSET_X, CANVAS_H - BOTTOM_MARGIN - products.B.snapshot.h);
+    await drawSnap(products.A.snapshot, PROD_A_POS.x, PROD_A_POS.y);
+    await drawSnap(products.B.snapshot, PROD_B_POS.x, PROD_B_POS.y);
 
     // 4. 品宣条置顶
     drawScaled(deco4Img, DECO4_POS.x, DECO4_POS.y, DECO4_POS.width);
@@ -723,6 +736,11 @@ async function generate() {
     // 显示到右侧画布
     displayResult(canvas);
     showStatus('✓ 生成完成');
+
+    // 激活下载按钮
+    const dlBtn = document.getElementById('downloadBtn');
+    dlBtn.disabled = false;
+    dlBtn._canvas = canvas;
 }
 
 // ═══════════════════════════════════════════════════
@@ -843,6 +861,19 @@ function setupLightbox() {
     setupLightbox();
 
     document.getElementById('generateBtn').addEventListener('click', generate);
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+        const dlBtn = document.getElementById('downloadBtn');
+        const canvas = dlBtn._canvas;
+        if (!canvas) return;
+        canvas.toBlob(blob => {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `banner_${Date.now()}.png`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }, 'image/png');
+    });
 })();
 </script>
 </body>
