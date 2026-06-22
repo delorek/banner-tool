@@ -866,13 +866,35 @@ function setupLightbox() {
         const dlBtn = document.getElementById('downloadBtn');
         const canvas = dlBtn._canvas;
         if (!canvas) return;
+
+        const limit = 300 * 1024;
+
+        // 先尝试 PNG，超限则转 JPEG 逐步降质
         canvas.toBlob(blob => {
+            if (blob.size <= limit) {
+                triggerDownload(blob);
+            } else {
+                compressJpeg(canvas, 0.92);
+            }
+        }, 'image/png');
+
+        function compressJpeg(src, quality) {
+            src.toBlob(blob => {
+                if (blob.size <= limit || quality <= 0.5) {
+                    triggerDownload(blob);
+                } else {
+                    compressJpeg(src, parseFloat((quality - 0.06).toFixed(2)));
+                }
+            }, 'image/jpeg', quality);
+        }
+
+        function triggerDownload(blob) {
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = `banner_${Date.now()}.png`;
             a.click();
             URL.revokeObjectURL(a.href);
-        }, 'image/png');
+        }
     });
 })();
 </script>
