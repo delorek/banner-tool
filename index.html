@@ -18,890 +18,772 @@
 
         /* ── 左侧面板 ── */
         .left-panel {
-            width: 420px;
+            width: 380px;
             background: white;
             overflow-y: auto;
             border-right: 1px solid #e0e0e0;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 24px 20px;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.04);
             flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
-        .left-panel::-webkit-scrollbar { width: 6px; }
-        .left-panel::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+        .left-panel::-webkit-scrollbar { width: 4px; }
+        .left-panel::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
 
-        .panel-title { font-size: 18px; font-weight: 600; margin: 0 0 20px 0; color: #1a1a1a; }
-        .section-label { font-size: 12px; font-weight: 600; color: #666; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .panel-title { font-size: 17px; font-weight: 700; color: #1a1a1a; margin: 0; }
 
-        /* ── 背景色 ── */
-        .bg-section { margin-bottom: 24px; }
-        .color-row { display: flex; gap: 16px; flex-wrap: wrap; }
-        .color-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #333; }
-        .color-item input[type="color"] { width: 44px; height: 32px; padding: 2px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; }
-
-        /* ── 装饰上传 ── */
-        .deco-section { margin-bottom: 24px; }
-        .deco-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-        .deco-pool {
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 12px;
-            background: #fafafa;
+        .section-label {
+            font-size: 11px; font-weight: 700; color: #888;
+            text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;
         }
-        .deco-pool-title { font-size: 12px; font-weight: 600; color: #444; margin-bottom: 8px; }
-        .deco-candidate { margin-bottom: 8px; }
-        .deco-candidate label { display: block; font-size: 11px; color: #777; margin-bottom: 4px; }
-        .deco-candidate input[type="file"] { width: 100%; font-size: 11px; }
-        .preview-thumb-row { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
-        .preview-thumb { width: 40px; height: 40px; background: #eee; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #ddd; }
-        .preview-thumb img { max-width: 36px; max-height: 36px; object-fit: contain; }
 
-        .deco-bg-row { margin-bottom: 12px; }
-        .deco-bg-row label { display: block; font-size: 12px; color: #555; margin-bottom: 4px; }
-        .deco-bg-row input[type="file"] { width: 100%; font-size: 11px; }
+        /* ── 品类选择 ── */
+        .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .category-card {
+            border: 2px solid #e8e8e8; border-radius: 10px; padding: 8px;
+            cursor: pointer; transition: all 0.18s; background: white;
+        }
+        .category-card:hover { border-color: #06805c; }
+        .category-card.active { border-color: #06805c; background: #f0f9f6; }
+        .category-card img { width: 100%; border-radius: 6px; display: block; }
+        .category-card .cat-label {
+            font-size: 12px; font-weight: 600; color: #333;
+            text-align: center; margin-top: 6px;
+        }
 
-        /* ── 商品组 ── */
-        .products-section { margin-bottom: 24px; }
+        /* ── 商品图 ── */
         .product-pair {
-            background: #fafafa;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 14px;
-            margin-bottom: 12px;
+            background: #fafafa; border: 1px solid #ebebeb;
+            border-radius: 10px; padding: 12px;
         }
-        .pair-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-        .pair-index { font-size: 12px; font-weight: 600; background: #f0f0f0; padding: 3px 10px; border-radius: 20px; color: #333; }
         .pair-upload { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        .pair-upload .item { background: white; border-radius: 8px; padding: 10px; border: 1px solid #e8e8e8; }
-        .item-label-text { font-size: 11px; font-weight: 600; color: #444; display: block; margin-bottom: 6px; }
-        .pair-upload .item input[type="file"] { width: 100%; font-size: 11px; }
+        .upload-item { background: white; border-radius: 8px; padding: 10px; border: 1px solid #e8e8e8; }
+        .upload-item-label { font-size: 11px; font-weight: 600; color: #555; display: block; margin-bottom: 6px; }
+        .upload-item input[type="file"] { width: 100%; font-size: 11px; }
 
-        /* 商品预览 canvas */
         .prod-preview-canvas-wrap { margin-top: 8px; }
         .prod-preview-canvas-wrap canvas {
-            display: block;
-            width: 100% !important;
-            height: auto !important;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            background: #f8f8f8;
-            cursor: zoom-in;
+            display: block; width: 100% !important; height: auto !important;
+            border-radius: 7px; border: 1px solid #e4e4e4;
+            background: #f4f4f4; cursor: zoom-in;
         }
-        .preview-hint { font-size: 10px; color: #aaa; margin-top: 4px; line-height: 1.4; }
+        .preview-hint { font-size: 10px; color: #bbb; margin-top: 4px; line-height: 1.5; }
 
         /* 精细调整 */
-        .adv-toggle { font-size: 11px; color: #06805c; cursor: pointer; margin-top: 6px; display: inline-block; }
-        .advanced-options { margin-top: 6px; padding: 10px; background: #f0f9f6; border-radius: 8px; display: none; border: 1px solid #c8e8df; }
+        .adv-toggle {
+            font-size: 11px; color: #06805c; cursor: pointer;
+            margin-top: 8px; display: inline-flex; align-items: center; gap: 4px;
+            user-select: none;
+        }
+        .adv-toggle::before { content: '▶'; font-size: 9px; transition: transform 0.2s; }
+        .adv-toggle.open::before { transform: rotate(90deg); }
+        .advanced-options {
+            margin-top: 6px; padding: 10px; background: #f0f9f6;
+            border-radius: 8px; display: none; border: 1px solid #c8e8df;
+        }
         .advanced-options.show { display: block; }
-        .control-group { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
-        .control-group label { font-size: 11px; font-weight: 600; min-width: 72px; color: #555; }
-        .control-group input[type="range"] { flex: 1; min-width: 80px; }
-        .control-group input[type="number"] { width: 52px; padding: 3px 6px; border-radius: 6px; border: 1px solid #ccc; font-size: 11px; }
+        .control-group { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .control-group:last-child { margin-bottom: 0; }
+        .control-group label { font-size: 11px; font-weight: 600; min-width: 64px; color: #555; }
+        .control-group input[type="range"] { flex: 1; min-width: 60px; }
+        .control-group input[type="number"] { width: 50px; padding: 3px 5px; border-radius: 5px; border: 1px solid #ccc; font-size: 11px; }
 
-        /* 文案区 */
-        .pair-text-toggle {
-            font-size: 11px; color: #555; background: #f0f0f0; border: 1px solid #ddd;
-            border-radius: 20px; padding: 4px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+        /* 文案 */
+        .text-section { display: flex; flex-direction: column; gap: 10px; }
+        .text-block label { display: block; font-size: 11px; font-weight: 600; color: #555; margin-bottom: 5px; }
+        .text-input {
+            width: 100%; padding: 8px 10px; border: 1px solid #ddd;
+            border-radius: 7px; font-size: 13px; background: white;
+            transition: border-color 0.15s;
         }
-        .pair-text-toggle:hover { background: #e6e6e6; }
-        .pair-text-config { margin-top: 8px; }
-        .pair-text-config.collapsed { display: none; }
-        .text-config-section { background: white; border-radius: 8px; padding: 10px; border: 1px solid #e8e8e8; }
-        .text-block { margin-bottom: 10px; }
-        .text-block:last-child { margin-bottom: 0; }
-        .text-block-title { font-size: 11px; font-weight: 600; color: #444; margin-bottom: 4px; }
-        .text-input { width: 100%; padding: 7px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; background: white; }
-        .text-input:focus { outline: none; border-color: #06805c; }
+        .text-input:focus { outline: none; border-color: #06805c; box-shadow: 0 0 0 3px rgba(6,128,92,0.08); }
 
-        /* 删除按钮 */
-        .remove-pair { color: #b91c1c; background: none; border: none; cursor: pointer; font-size: 13px; padding: 2px 8px; border-radius: 20px; }
-        .remove-pair:hover { background: #fee2e2; }
+        .upload-hint { font-size: 11px; color: #aaa; line-height: 1.6; }
 
-        .add-pair-btn {
-            width: 100%; padding: 9px; background: #f0f9f6; color: #06805c;
-            border: 1px dashed #06805c; border-radius: 8px; font-size: 13px;
-            cursor: pointer; margin-top: 4px;
-        }
-        .add-pair-btn:hover { background: #e0f5ee; }
-
-        .upload-hint { font-size: 11px; color: #999; line-height: 1.5; margin-top: 6px; }
-
-        /* 操作按钮 */
-        .action-section { margin-top: 8px; display: flex; flex-direction: column; gap: 10px; }
+        /* ── 生成按钮 ── */
         .gen-btn {
             width: 100%; padding: 13px; background: #06805c; color: white;
-            border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
-            cursor: pointer; transition: background 0.2s;
+            border: none; border-radius: 8px; font-size: 14px; font-weight: 700;
+            cursor: pointer; transition: background 0.2s; margin-top: 4px;
         }
         .gen-btn:hover { background: #056b4a; }
-        .dl-btn {
-            width: 100%; padding: 13px; background: #1f2b38; color: white;
-            border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
-            cursor: pointer; transition: background 0.2s;
-        }
-        .dl-btn:hover { background: #2c3e50; }
+        .gen-btn:active { background: #044f37; }
 
         /* ── 右侧画布 ── */
         .right-panel {
-            flex: 1;
-            background: #f0f0f0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
+            flex: 1; background: #ebebeb;
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
         }
 
-        /* 状态 + 结果 */
+        /* 工具栏 */
+        .canvas-toolbar {
+            position: absolute; top: 16px; right: 16px;
+            display: flex; gap: 6px; z-index: 20;
+            background: white; padding: 6px 8px;
+            border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .toolbar-btn {
+            width: 30px; height: 30px; border: 1px solid #e0e0e0;
+            background: white; border-radius: 6px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; transition: all 0.15s; color: #444;
+        }
+        .toolbar-btn:hover { background: #f5f5f5; border-color: #06805c; color: #06805c; }
+        .toolbar-btn.active { background: #06805c; color: white; border-color: #06805c; }
+
+        /* 画布容器（可缩放拖拽） */
+        .canvas-wrapper {
+            position: relative; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; cursor: grab;
+        }
+        .canvas-wrapper.locked { cursor: default; }
+        .canvas-inner {
+            transform-origin: center center;
+            transition: none;
+            position: relative;
+        }
+        .canvas-inner canvas {
+            display: block;
+            border-radius: 6px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+        }
+
+        /* 状态提示 */
         .status-bar {
-            position: absolute;
-            bottom: 16px;
-            left: 50%;
+            position: absolute; bottom: 20px; left: 50%;
             transform: translateX(-50%);
-            background: white;
-            border-radius: 8px;
-            padding: 8px 16px;
-            font-size: 13px;
-            color: #555;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            max-width: 80%;
-            text-align: center;
-            display: none;
+            background: rgba(30,30,30,0.82); color: white;
+            padding: 8px 18px; border-radius: 20px; font-size: 13px;
+            white-space: nowrap; pointer-events: none;
+            opacity: 0; transition: opacity 0.3s;
         }
-        .status-bar.show { display: block; }
-
-        .result-scroll {
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            max-height: 40%;
-            overflow-y: auto;
-            background: white;
-            border-top: 1px solid #e0e0e0;
-            padding: 12px 16px;
-            display: none;
-        }
-        .result-scroll.show { display: block; }
-        .result-scroll-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: #333; }
-        .batch-result-grid { display: flex; flex-wrap: wrap; gap: 12px; }
-        .result-card { background: #fafafa; border-radius: 10px; padding: 10px; width: 180px; border: 1px solid #eee; }
-        .result-card img { width: 100%; border-radius: 6px; cursor: zoom-in; display: block; margin-top: 6px; }
-        .result-card a { font-size: 11px; display: block; margin-top: 6px; color: #06805c; text-decoration: none; }
-        .result-card a:hover { text-decoration: underline; }
-
-        /* 画布预览区 */
-        .canvas-preview-wrap {
-            position: relative;
-            max-width: 90%;
-            max-height: 60%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .canvas-preview-wrap img {
-            max-width: 100%;
-            max-height: 100%;
-            border-radius: 8px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-        }
+        .status-bar.show { opacity: 1; }
 
         /* lightbox */
         .lightbox-overlay {
             display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.75); z-index: 9999;
+            background: rgba(0,0,0,0.78); z-index: 9999;
             align-items: center; justify-content: center; cursor: zoom-out;
         }
         .lightbox-overlay.show { display: flex; }
-        .lightbox-overlay img { max-width: 90vw; max-height: 90vh; border-radius: 12px; object-fit: contain; }
-
-        /* 响应式 */
-        @media (max-width: 900px) {
-            .main-container { flex-direction: column; }
-            .left-panel { width: 100%; height: 50vh; border-right: none; border-bottom: 1px solid #e0e0e0; }
-            .right-panel { height: 50vh; }
+        .lightbox-overlay img {
+            max-width: 92vw; max-height: 92vh;
+            border-radius: 10px; object-fit: contain;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.5);
         }
+
+        /* 空态提示 */
+        .canvas-placeholder {
+            color: #c0c0c0; font-size: 14px; text-align: center; pointer-events: none;
+        }
+        .canvas-placeholder svg { display: block; margin: 0 auto 12px; opacity: 0.35; }
     </style>
 </head>
 <body>
 <div class="main-container">
 
-    <!-- 左侧面板 -->
+    <!-- ══ 左侧面板 ══ -->
     <div class="left-panel">
         <h1 class="panel-title">配置分会场头图</h1>
 
-        <!-- 背景渐变 -->
-        <div class="bg-section">
-            <div class="section-label">背景渐变</div>
-            <div class="color-row">
-                <div class="color-item"><label>顶部色</label><input type="color" id="topColor" value="#FFDFF4"></div>
-                <div class="color-item"><label>底部色</label><input type="color" id="bottomColor" value="#FFF7FC"></div>
-            </div>
-        </div>
-
-        <!-- 装饰元素 -->
-        <div class="deco-section">
-            <div class="section-label">装饰元素</div>
-            <div class="deco-grid">
-                <div class="deco-pool">
-                    <div class="deco-pool-title">左侧装饰池</div>
-                    <div class="deco-candidate">
-                        <label>候选1</label>
-                        <input type="file" id="leftPool1" accept="image/png">
-                        <div class="preview-thumb-row" id="previewLeft1"></div>
-                    </div>
-                    <div class="deco-candidate">
-                        <label>候选2</label>
-                        <input type="file" id="leftPool2" accept="image/png">
-                        <div class="preview-thumb-row" id="previewLeft2"></div>
-                    </div>
+        <!-- 品类选择 -->
+        <div>
+            <div class="section-label">品类选择</div>
+            <div class="category-grid" id="categoryGrid">
+                <div class="category-card active" data-cat="other">
+                    <img src="template.png" alt="其他品类">
+                    <div class="cat-label">其他品类</div>
                 </div>
-                <div class="deco-pool">
-                    <div class="deco-pool-title">右侧装饰池</div>
-                    <div class="deco-candidate">
-                        <label>候选1</label>
-                        <input type="file" id="rightPool1" accept="image/png">
-                        <div class="preview-thumb-row" id="previewRight1"></div>
-                    </div>
-                    <div class="deco-candidate">
-                        <label>候选2</label>
-                        <input type="file" id="rightPool2" accept="image/png">
-                        <div class="preview-thumb-row" id="previewRight2"></div>
-                    </div>
+                <div class="category-card" data-cat="shoes">
+                    <img src="template.png" alt="鞋类">
+                    <div class="cat-label">鞋类</div>
                 </div>
             </div>
-            <div class="deco-bg-row">
-                <label>背景底纹（可选）</label>
-                <input type="file" id="deco3" accept="image/png">
-                <div class="preview-thumb-row" id="previewDeco3"></div>
-            </div>
-            <div class="upload-hint">上传1个装饰则固定使用，上传2个则每次随机选1个</div>
         </div>
 
-        <!-- 商品组 -->
-        <div class="products-section">
-            <div class="section-label">商品组</div>
-            <div id="productPairsContainer"></div>
-            <button id="addPairBtn" class="add-pair-btn">+ 添加一组商品图</button>
-            <div class="upload-hint" style="margin-top:8px;">
-                上传后自动 AI 抠图（首次加载约10秒）<br>
-                抠图不理想？先去<a href="https://www.doubao.com/chat/create-image" target="_blank" style="color:#06805c;text-decoration:none;">豆包 AI 抠图</a>处理成透明 PNG 再上传，自动跳过抠图 ✨
+        <!-- 商品图 -->
+        <div>
+            <div class="section-label">商品图</div>
+            <div class="product-pair">
+                <div class="pair-upload">
+                    <div class="upload-item">
+                        <span class="upload-item-label">商品 A（底层）</span>
+                        <input type="file" id="fileA" accept="image/*">
+                        <div class="prod-preview-canvas-wrap">
+                            <canvas id="previewCanvasA" width="268" height="300"></canvas>
+                            <div class="preview-hint">上传后自动 AI 抠图</div>
+                        </div>
+                        <span class="adv-toggle" id="advToggleA">精细调整</span>
+                        <div class="advanced-options" id="advPanelA">
+                            <div class="control-group">
+                                <label>缩放(%):</label>
+                                <input type="range" min="30" max="200" value="100" id="scaleSliderA">
+                                <input type="number" min="30" max="200" value="100" id="scaleNumA">
+                            </div>
+                            <div class="control-group">
+                                <label>垂直偏移:</label>
+                                <input type="range" min="-150" max="150" value="0" id="offsetSliderA">
+                                <input type="number" min="-150" max="150" value="0" id="offsetNumA">
+                            </div>
+                            <div class="control-group">
+                                <label>横向偏移:</label>
+                                <input type="range" min="-150" max="150" value="0" id="offsetxSliderA">
+                                <input type="number" min="-150" max="150" value="0" id="offsetxNumA">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="upload-item">
+                        <span class="upload-item-label">商品 B（上层）</span>
+                        <input type="file" id="fileB" accept="image/*">
+                        <div class="prod-preview-canvas-wrap">
+                            <canvas id="previewCanvasB" width="268" height="300"></canvas>
+                            <div class="preview-hint">上传后自动 AI 抠图</div>
+                        </div>
+                        <span class="adv-toggle" id="advToggleB">精细调整</span>
+                        <div class="advanced-options" id="advPanelB">
+                            <div class="control-group">
+                                <label>缩放(%):</label>
+                                <input type="range" min="30" max="200" value="100" id="scaleSliderB">
+                                <input type="number" min="30" max="200" value="100" id="scaleNumB">
+                            </div>
+                            <div class="control-group">
+                                <label>垂直偏移:</label>
+                                <input type="range" min="-150" max="150" value="0" id="offsetSliderB">
+                                <input type="number" min="-150" max="150" value="0" id="offsetNumB">
+                            </div>
+                            <div class="control-group">
+                                <label>横向偏移:</label>
+                                <input type="range" min="-150" max="150" value="0" id="offsetxSliderB">
+                                <input type="number" min="-150" max="150" value="0" id="offsetxNumB">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="upload-hint">
+                    抠图不理想？先去
+                    <a href="https://www.doubao.com/chat/create-image" target="_blank" style="color:#06805c;text-decoration:none;">豆包 AI 抠图</a>
+                    处理成透明 PNG 再上传，自动跳过抠图 ✨
+                </div>
             </div>
         </div>
 
-        <!-- 操作按钮 -->
-        <div class="action-section">
-            <button class="gen-btn" id="generateBtn">批量生成所有会场图</button>
-            <button class="dl-btn" id="downloadAllBtn">打包下载全部图片</button>
+        <!-- 文案 -->
+        <div>
+            <div class="section-label">文案配置</div>
+            <div class="text-section">
+                <div class="text-block">
+                    <label>主标题（最多 8 字）</label>
+                    <input type="text" class="text-input" id="mainTitle" maxlength="8" placeholder="例如：520新品">
+                </div>
+                <div class="text-block">
+                    <label>副标题</label>
+                    <input type="text" class="text-input" id="subTitle" placeholder="例如：满额400 享12期免息">
+                </div>
+                <div class="text-block">
+                    <label>高亮词（逗号分隔）</label>
+                    <input type="text" class="text-input" id="highlightWords" placeholder="例如：400,12期免息">
+                </div>
+            </div>
         </div>
+
+        <!-- 生成按钮 -->
+        <button class="gen-btn" id="generateBtn">生成头图</button>
     </div>
 
-    <!-- 右侧预览区 -->
-    <div class="right-panel">
-        <div id="statusMsg" class="status-bar"></div>
-        <div class="canvas-preview-wrap" id="canvasPreviewWrap">
-            <!-- 生成后展示最新一张预览 -->
+    <!-- ══ 右侧画布 ══ -->
+    <div class="right-panel" id="rightPanel">
+        <!-- 工具栏 -->
+        <div class="canvas-toolbar">
+            <button class="toolbar-btn" id="zoomInBtn" title="放大">+</button>
+            <button class="toolbar-btn" id="zoomOutBtn" title="缩小">−</button>
+            <button class="toolbar-btn" id="zoomResetBtn" title="重置缩放">⊙</button>
+            <button class="toolbar-btn" id="lockBtn" title="锁定/解锁拖动">🔒</button>
         </div>
-        <div class="result-scroll" id="resultArea">
-            <div class="result-scroll-title">批量生成结果</div>
-            <div class="batch-result-grid" id="batchResultGrid"></div>
-        </div>
-    </div>
 
+        <!-- 可拖拽缩放区 -->
+        <div class="canvas-wrapper" id="canvasWrapper">
+            <div class="canvas-inner" id="canvasInner">
+                <div class="canvas-placeholder" id="placeholder">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+                    </svg>
+                    点击「生成头图」查看效果
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar" id="statusBar"></div>
+    </div>
 </div>
 
-<!-- lightbox 大图预览 -->
+<!-- lightbox -->
 <div class="lightbox-overlay" id="lightboxOverlay">
     <img id="lightboxImg" src="" alt="大图预览">
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     JS：完整保留 old.html 原始逻辑，一行未改
-════════════════════════════════════════════════════════ -->
 <script type="module">
 import { removeBackground } from 'https://esm.run/@imgly/background-removal';
-import JSZip from 'https://esm.run/jszip';
-(async function(){
-    const CANVAS_W = 1125, CANVAS_H = 519;
-    const DECOS_FIXED    = { deco3:{x:0,y:0,width:1125}, deco4:{x:720,y:449,width:340} };
-    const DECO_LEFT_POS  = { x:537, y:307, width:210 };
-    const DECO_RIGHT_POS = { x:895, y:307, width:210 };
-    // 预览画框尺寸（与最终合成商品槽保持一致）
-    const PREVIEW_W = 268, PREVIEW_H = 300;
-    const RIGHT_MARGIN = 234, BOTTOM_MARGIN = 21, PROD2_OFFSET_X = 138;
-    const TITLE_POS    = { x:42, y:268 };
-    const SUBTITLE_POS = { x:42, y:370 };
 
-    let leftPool = [null,null], rightPool = [null,null];
-    let deco3Img = null, deco4Img = null;
-    let globalStyle = { mainColor:'#000000', mainSize:69, subColor:'#000000', subSize:36, highlightColor:'#FF0000' };
-    let productPairs = [];
-    let generatedResults = [];
+// ═══════════════════════════════════════════════════
+//  常量 & 状态
+// ═══════════════════════════════════════════════════
+const CANVAS_W = 1125, CANVAS_H = 519;
+const DECO4_POS      = { x: 720,  y: 449, width: 340 };
+const DECO_LEFT_POS  = { x: 537,  y: 307, width: 210 };
+const DECO_RIGHT_POS = { x: 895,  y: 307, width: 210 };
+const PREVIEW_W = 268, PREVIEW_H = 300;
+const RIGHT_MARGIN = 234, BOTTOM_MARGIN = 21, PROD2_OFFSET_X = 138;
+const TITLE_POS    = { x: 42, y: 268 };
+const SUBTITLE_POS = { x: 42, y: 370 };
 
-    // ── AI 抠图，返回 canvas（原图尺寸，背景透明）──────────────────────
-    async function loadAndRemoveBg(file, feather = 0) {
-        const blob = await removeBackground(file, {
-            output: { format: 'image/png', quality: 1 },
+const TEXT_STYLE = { mainColor: '#000000', mainSize: 69, subColor: '#000000', subSize: 36, highlightColor: '#FF0000' };
+
+// 后台固定素材
+let bgImg = null, decoLeft = null, decoRight = null, deco4Img = null;
+
+// 商品
+const products = {
+    A: { noBg: null, snapshot: null },
+    B: { noBg: null, snapshot: null },
+};
+
+// 当前选中品类
+let currentCat = 'other';
+
+// ═══════════════════════════════════════════════════
+//  工具函数
+// ═══════════════════════════════════════════════════
+function loadImg(src) {
+    return new Promise((res, rej) => {
+        const img = new Image();
+        img.onload = () => res(img);
+        img.onerror = rej;
+        img.src = src;
+    });
+}
+
+function getTrimBounds(canvas) {
+    const ctx = canvas.getContext('2d');
+    const { width: w, height: h } = canvas;
+    const d = ctx.getImageData(0, 0, w, h).data;
+    let minX = w, minY = h, maxX = 0, maxY = 0;
+    for (let y = 0; y < h; y++)
+        for (let x = 0; x < w; x++)
+            if (d[(y * w + x) * 4 + 3] > 10) {
+                if (x < minX) minX = x; if (x > maxX) maxX = x;
+                if (y < minY) minY = y; if (y > maxY) maxY = y;
+            }
+    if (maxX < minX) return null;
+    return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+}
+
+function calcAutoScale(noBgCanvas) {
+    const b = getTrimBounds(noBgCanvas);
+    if (!b) return 1;
+    const sw = PREVIEW_W / b.w;
+    return b.h * sw <= PREVIEW_H ? sw : PREVIEW_H / b.h;
+}
+
+function drawToPreview(canvas, noBg, scale, offsetY, offsetX) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, PREVIEW_W, PREVIEW_H);
+    const b = getTrimBounds(noBg);
+    if (!b) return;
+    const dw = Math.round(b.w * scale), dh = Math.round(b.h * scale);
+    ctx.drawImage(noBg, b.x, b.y, b.w, b.h, (PREVIEW_W - dw) / 2 + offsetX, PREVIEW_H - dh + offsetY, dw, dh);
+}
+
+function snapshotCanvas(canvas) {
+    return { dataURL: canvas.toDataURL('image/png'), w: PREVIEW_W, h: PREVIEW_H };
+}
+
+function bindSlider(slider, num, onChange) {
+    slider.addEventListener('input', () => { num.value = slider.value; onChange(); });
+    num.addEventListener('input', () => { slider.value = num.value; onChange(); });
+}
+
+// ═══════════════════════════════════════════════════
+//  状态提示
+// ═══════════════════════════════════════════════════
+let statusTimer = null;
+function showStatus(msg, duration = 3000) {
+    const el = document.getElementById('statusBar');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(statusTimer);
+    if (duration > 0) statusTimer = setTimeout(() => el.classList.remove('show'), duration);
+}
+
+// ═══════════════════════════════════════════════════
+//  加载后台固定素材
+// ═══════════════════════════════════════════════════
+async function loadAssets() {
+    [bgImg, decoLeft, decoRight, deco4Img] = await Promise.all([
+        loadImg('background.png'),
+        loadImg('deco_left_A.png'),
+        loadImg('deco_right_A.png'),
+        loadImg('deco4.png'),
+    ]);
+    await document.fonts.load(`400 69px "POIZONSans"`);
+}
+
+// ═══════════════════════════════════════════════════
+//  品类选择
+// ═══════════════════════════════════════════════════
+function initCategories() {
+    document.querySelectorAll('.category-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.category-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            currentCat = card.dataset.cat;
         });
-        const url = URL.createObjectURL(blob);
-        const img = await new Promise((res, rej) => {
-            const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url;
-        });
-        URL.revokeObjectURL(url);
+    });
+}
 
-        const c = document.createElement('canvas');
-        c.width = img.naturalWidth; c.height = img.naturalHeight;
-        const ctx = c.getContext('2d');
-        ctx.drawImage(img, 0, 0);
+// ═══════════════════════════════════════════════════
+//  AI 抠图
+// ═══════════════════════════════════════════════════
+async function processFile(file) {
+    const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
+    const hasAlpha = isPng && await checkTransparency(file);
+    if (hasAlpha) return loadPngDirect(file);
 
-        {
-            const id = ctx.getImageData(0, 0, c.width, c.height);
-            const d = id.data;
-            for (let i = 3; i < d.length; i += 4) {
-                const a = d[i];
-                if (a < 30) {
-                    d[i] = 0;
-                } else if (a > 180) {
-                    d[i] = 255;
-                } else {
-                    d[i] = Math.round((a - 30) / (180 - 30) * 255);
-                }
-            }
-            ctx.putImageData(id, 0, 0);
-        }
+    const blob = await removeBackground(file, { output: { format: 'image/png', quality: 1 } });
+    return blobToCanvas(blob);
+}
 
-        if (feather > 0) {
-            const id = ctx.getImageData(0, 0, c.width, c.height);
-            const d = id.data, w = c.width, h = c.height;
-            const orig = new Uint8ClampedArray(d);
-            const r = Math.max(1, Math.round(feather / 3));
-            for (let y = 0; y < h; y++) {
-                for (let x = 0; x < w; x++) {
-                    const idx = (y * w + x) * 4;
-                    if (orig[idx+3] === 0) continue;
-                    let sum = 0, cnt = 0;
-                    for (let dy = -r; dy <= r; dy++) {
-                        for (let dx = -r; dx <= r; dx++) {
-                            const nx = x+dx, ny = y+dy;
-                            if (nx>=0 && nx<w && ny>=0 && ny<h) {
-                                sum += orig[((ny*w+nx)*4)+3]; cnt++;
-                            }
-                        }
-                    }
-                    d[idx+3] = Math.round(sum / cnt);
-                }
-            }
-            ctx.putImageData(id, 0, 0);
-        }
-        return c;
-    }
-
-    function getTrimBounds(canvas) {
-        const ctx = canvas.getContext('2d');
-        const { width: w, height: h } = canvas;
-        const d = ctx.getImageData(0, 0, w, h).data;
-        let minX = w, minY = h, maxX = 0, maxY = 0;
-        for (let y = 0; y < h; y++) {
-            for (let x = 0; x < w; x++) {
-                if (d[(y * w + x) * 4 + 3] > 10) {
-                    if (x < minX) minX = x;
-                    if (x > maxX) maxX = x;
-                    if (y < minY) minY = y;
-                    if (y > maxY) maxY = y;
-                }
-            }
-        }
-        if (maxX < minX) return null;
-        return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
-    }
-
-    function calcAutoScale(noBgCanvas) {
-        const bounds = getTrimBounds(noBgCanvas);
-        if (!bounds) return 1;
-        const scaleByW = PREVIEW_W / bounds.w;
-        const scaledH = bounds.h * scaleByW;
-        if (scaledH <= PREVIEW_H) {
-            return scaleByW;
-        }
-        return PREVIEW_H / bounds.h;
-    }
-
-    function drawToPreview(previewCanvas, noBgCanvas, scale, offsetY, offsetX = 0) {
-        const ctx = previewCanvas.getContext('2d');
-        ctx.clearRect(0, 0, PREVIEW_W, PREVIEW_H);
-
-        const bounds = getTrimBounds(noBgCanvas);
-        if (!bounds) return;
-
-        const drawW = Math.round(bounds.w * scale);
-        const drawH = Math.round(bounds.h * scale);
-
-        const dx = (PREVIEW_W - drawW) / 2 + offsetX;
-        const dy = PREVIEW_H - drawH + offsetY;
-
-        ctx.drawImage(
-            noBgCanvas,
-            bounds.x, bounds.y, bounds.w, bounds.h,
-            dx, dy, drawW, drawH
-        );
-    }
-
-    function snapshotPreview(previewCanvas, offsetY) {
-        return {
-            dataURL: previewCanvas.toDataURL('image/png'),
-            w: PREVIEW_W,
-            h: PREVIEW_H,
-            offsetY: 0
+function checkTransparency(file) {
+    return new Promise(res => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            const c = document.createElement('canvas');
+            c.width = img.naturalWidth; c.height = img.naturalHeight;
+            c.getContext('2d').drawImage(img, 0, 0);
+            const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+            for (let i = 3; i < d.length; i += 32) if (d[i] < 250) { res(true); return; }
+            res(false);
         };
-    }
+        img.onerror = () => res(false);
+        img.src = url;
+    });
+}
 
-    function processNormalImage(file, targetWidth) {
-        return new Promise((resolve, reject) => {
-            const url = URL.createObjectURL(file);
-            const img = new Image();
-            img.onload = () => {
-                URL.revokeObjectURL(url);
-                const h = img.height * (targetWidth / img.width);
-                const c = document.createElement('canvas');
-                c.width = targetWidth; c.height = h;
-                c.getContext('2d').drawImage(img, 0, 0, targetWidth, h);
-                const out = new Image();
-                out.onload = () => resolve(out);
-                out.src = c.toDataURL('image/png');
-            };
-            img.onerror = reject;
-            img.src = url;
-        });
-    }
+function loadPngDirect(file) {
+    return new Promise((res, rej) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            const c = document.createElement('canvas');
+            c.width = img.naturalWidth; c.height = img.naturalHeight;
+            const ctx = c.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            // 去豆包水印
+            ctx.clearRect(Math.floor(c.width * 0.80), Math.floor(c.height * 0.92), c.width, c.height);
+            res(c);
+        };
+        img.onerror = rej;
+        img.src = url;
+    });
+}
 
-    function hexToRgb(hex) {
-        let h = hex.slice(1);
-        if (h.length===3) h = h.split('').map(c=>c+c).join('');
-        const n = parseInt(h,16);
-        return {r:(n>>16)&255, g:(n>>8)&255, b:n&255};
-    }
-    function drawGradient(ctx,w,h,top,btm) {
-        const t=hexToRgb(top), b=hexToRgb(btm), d=ctx.getImageData(0,0,w,h);
-        for(let y=0;y<h;y++){
-            const p=y/(h-1);
-            const r=Math.round(t.r*(1-p)+b.r*p), g=Math.round(t.g*(1-p)+b.g*p), bv=Math.round(t.b*(1-p)+b.b*p);
-            for(let x=0;x<w;x++){const i=(y*w+x)*4;d.data[i]=r;d.data[i+1]=g;d.data[i+2]=bv;d.data[i+3]=255;}
-        }
-        ctx.putImageData(d,0,0);
-    }
-    function drawScaled(ctx,img,x,y,tw){ if(!img) return; ctx.drawImage(img,x,y,tw,img.height*(tw/img.width)); }
-    function drawSubtitleWithHighlight(ctx,text,x,y,fontSize,defaultColor,highlightWords,highlightColor){
-        if(!text) return;
-        ctx.textBaseline='top';
-        if(!highlightWords||!highlightWords.trim()){ctx.font=`400 ${fontSize}px "PingFang SC"`;ctx.fillStyle=defaultColor;ctx.fillText(text,x,y);return;}
-        const words=highlightWords.split(',').map(w=>w.trim()).filter(Boolean);
-        const regex=new RegExp(`(${words.map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})`,'gi');
-        const parts=[];let last=0,m;
-        while((m=regex.exec(text))!==null){if(m.index>last)parts.push({t:text.slice(last,m.index),hi:false});parts.push({t:m[0],hi:true});last=regex.lastIndex;}
-        if(last<text.length)parts.push({t:text.slice(last),hi:false});
-        let curX=x;
-        parts.forEach(p=>{ctx.font=`${p.hi?500:400} ${fontSize}px "PingFang SC"`;ctx.fillStyle=p.hi?highlightColor:defaultColor;ctx.fillText(p.t,curX,y);curX+=ctx.measureText(p.t).width;});
-    }
+function blobToCanvas(blob) {
+    return new Promise((res, rej) => {
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            const c = document.createElement('canvas');
+            c.width = img.naturalWidth; c.height = img.naturalHeight;
+            c.getContext('2d').drawImage(img, 0, 0);
+            res(c);
+        };
+        img.onerror = rej;
+        img.src = url;
+    });
+}
 
-    async function renderSingleBanner(leftImg,rightImg,deco3,deco4,prodA,prodB,topColor,bottomColor,mainText,subText,highlightWords) {
-        await document.fonts.load(`400 ${globalStyle.mainSize}px "POIZONSans"`);
-        const canvas=document.createElement('canvas');
-        canvas.width=CANVAS_W; canvas.height=CANVAS_H;
-        const ctx=canvas.getContext('2d');
-        drawGradient(ctx,CANVAS_W,CANVAS_H,topColor,bottomColor);
-        if(deco3) drawScaled(ctx,deco3,DECOS_FIXED.deco3.x,DECOS_FIXED.deco3.y,DECOS_FIXED.deco3.width);
-        drawScaled(ctx,leftImg,DECO_LEFT_POS.x,DECO_LEFT_POS.y,DECO_LEFT_POS.width);
-        drawScaled(ctx,rightImg,DECO_RIGHT_POS.x,DECO_RIGHT_POS.y,DECO_RIGHT_POS.width);
+// ═══════════════════════════════════════════════════
+//  商品上传绑定
+// ═══════════════════════════════════════════════════
+function bindProductUpload(side) {
+    const fileEl      = document.getElementById(`file${side}`);
+    const canvas      = document.getElementById(`previewCanvas${side}`);
+    const advToggle   = document.getElementById(`advToggle${side}`);
+    const advPanel    = document.getElementById(`advPanel${side}`);
+    const scaleSlider = document.getElementById(`scaleSlider${side}`);
+    const scaleNum    = document.getElementById(`scaleNum${side}`);
+    const offSlider   = document.getElementById(`offsetSlider${side}`);
+    const offNum      = document.getElementById(`offsetNum${side}`);
+    const offxSlider  = document.getElementById(`offsetxSlider${side}`);
+    const offxNum     = document.getElementById(`offsetxNum${side}`);
 
-        const drawProd = (dataURL, x, y, w, h) => new Promise(res => {
-            const img = new Image();
-            img.onload = () => { ctx.drawImage(img, x, y, w, h); res(); };
-            img.src = dataURL;
-        });
-
-        const prodAX = CANVAS_W - RIGHT_MARGIN - prodA.w;
-        const prodAY = CANVAS_H - BOTTOM_MARGIN - prodA.h;
-        await drawProd(prodA.dataURL, prodAX, prodAY, prodA.w, prodA.h);
-
-        const prodBX = prodAX + PROD2_OFFSET_X;
-        const prodBY = CANVAS_H - BOTTOM_MARGIN - prodB.h;
-        await drawProd(prodB.dataURL, prodBX, prodBY, prodB.w, prodB.h);
-
-        if(deco4) drawScaled(ctx,deco4,DECOS_FIXED.deco4.x,DECOS_FIXED.deco4.y,DECOS_FIXED.deco4.width);
-        if(mainText){
-            ctx.font=`400 ${globalStyle.mainSize}px "POIZONSans", "PingFang SC"`;
-            ctx.fillStyle=globalStyle.mainColor;
-            ctx.textBaseline='top';
-            let curX = TITLE_POS.x;
-            for(const char of mainText){
-                ctx.fillText(char, curX, TITLE_POS.y);
-                curX += ctx.measureText(char).width + 3;
-            }
-        }
-        if(subText) drawSubtitleWithHighlight(ctx,subText,SUBTITLE_POS.x,SUBTITLE_POS.y,globalStyle.subSize,globalStyle.subColor,highlightWords,globalStyle.highlightColor);
-
-        return await new Promise(res => {
-            const compressBlob = (blob, format, quality) => {
-                if(blob.size <= 300 * 1024) {
-                    const reader = new FileReader();
-                    reader.onload = () => res(reader.result);
-                    reader.readAsDataURL(blob);
-                } else if(format === 'image/png') {
-                    const c2 = document.createElement('canvas');
-                    c2.width = CANVAS_W; c2.height = CANVAS_H;
-                    const ctx2 = c2.getContext('2d');
-                    ctx2.drawImage(canvas, 0, 0);
-                    c2.toBlob(blob2 => compressBlob(blob2, 'image/jpeg', 0.85), 'image/jpeg', 0.85);
-                } else {
-                    if(quality <= 0.5) {
-                        const reader = new FileReader();
-                        reader.onload = () => res(reader.result);
-                        reader.readAsDataURL(blob);
-                    } else {
-                        const c2 = document.createElement('canvas');
-                        c2.width = CANVAS_W; c2.height = CANVAS_H;
-                        const ctx2 = c2.getContext('2d');
-                        ctx2.drawImage(canvas, 0, 0);
-                        c2.toBlob(blob2 => compressBlob(blob2, format, quality - 0.1), format, quality - 0.1);
-                    }
-                }
-            };
-            canvas.toBlob(blob => compressBlob(blob, 'image/png'), 'image/png');
-        });
-    }
-
-    async function batchGenerate() {
-        if(!deco4Img) throw new Error('品宣条图片未加载，请刷新页面重试');
-        const leftAvail=leftPool.filter(Boolean), rightAvail=rightPool.filter(Boolean);
-        if(!leftAvail.length||!rightAvail.length) throw new Error('左右装饰池至少各上传一个素材');
-        const valid=productPairs.filter(p=>p.snapshotA&&p.snapshotB);
-        if(!valid.length) throw new Error('请至少完成一组商品图的去白底处理');
-        const topColor=document.getElementById('topColor').value, bottomColor=document.getElementById('bottomColor').value;
-        const results=[];
-        for(let idx=0;idx<valid.length;idx++){
-            const pair=valid[idx];
-            const leftRand=leftAvail[Math.floor(Math.random()*leftAvail.length)];
-            const rightRand=rightAvail[Math.floor(Math.random()*rightAvail.length)];
-            const dataURL=await renderSingleBanner(leftRand,rightRand,deco3Img,deco4Img,pair.snapshotA,pair.snapshotB,topColor,bottomColor,pair.mainTitle||'',pair.subTitle||'',pair.highlightWords||'');
-            results.push({dataURL, mainText:pair.mainTitle});
-        }
-        generatedResults=results;
-        return results;
-    }
-
-    function setPoolPreview(inputId,containerId,storeArray,idx){
-        document.getElementById(inputId).addEventListener('change', async e=>{
-            const file=e.target.files[0];
-            const container=document.getElementById(containerId);
-            if(!file){storeArray[idx]=null;container.innerHTML='';return;}
-            const img=await processNormalImage(file,600);
-            storeArray[idx]=img;
-            container.innerHTML=`<div class="preview-thumb"><img src="${img.src}"></div>`;
-        });
-    }
-    setPoolPreview('leftPool1','previewLeft1',leftPool,0);
-    setPoolPreview('leftPool2','previewLeft2',leftPool,1);
-    setPoolPreview('rightPool1','previewRight1',rightPool,0);
-    setPoolPreview('rightPool2','previewRight2',rightPool,1);
-
-    document.getElementById('deco3').addEventListener('change', async e=>{
-        if(e.target.files[0]){
-            const fullImg = await processNormalImage(e.target.files[0], 1125);
-            deco3Img = fullImg;
-            const thumbImg = await processNormalImage(e.target.files[0], 200);
-            document.getElementById('previewDeco3').innerHTML=`<div class="preview-thumb"><img src="${thumbImg.src}"></div>`;
-        }
-        else{deco3Img=null;document.getElementById('previewDeco3').innerHTML='';}
+    // 精细调整折叠
+    advToggle.addEventListener('click', () => {
+        const open = advPanel.classList.toggle('show');
+        advToggle.classList.toggle('open', open);
     });
 
-    function bindGlobalEvents(){
-        globalStyle.mainColor      = '#000000';
-        globalStyle.mainSize       = 69;
-        globalStyle.subColor       = '#000000';
-        globalStyle.subSize        = 36;
-        globalStyle.highlightColor = '#FF0000';
+    // 滑块联动
+    const refresh = () => {
+        const noBg = products[side].noBg;
+        if (!noBg) return;
+        drawToPreview(canvas, noBg, parseFloat(scaleNum.value) / 100, parseInt(offNum.value) || 0, parseInt(offxNum.value) || 0);
+        products[side].snapshot = snapshotCanvas(canvas);
+    };
+    bindSlider(scaleSlider, scaleNum, refresh);
+    bindSlider(offSlider, offNum, refresh);
+    bindSlider(offxSlider, offxNum, refresh);
+
+    // 文件上传
+    fileEl.addEventListener('change', async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, PREVIEW_W, PREVIEW_H);
+        ctx.fillStyle = '#ccc';
+        ctx.font = '12px system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillText('处理中…', PREVIEW_W / 2, PREVIEW_H / 2);
+        ctx.textAlign = 'left';
+
+        try {
+            const noBg = await processFile(file);
+            products[side].noBg = noBg;
+            const autoScale = Math.round(calcAutoScale(noBg) * 100);
+            scaleSlider.value = scaleNum.value = autoScale;
+            offSlider.value = offNum.value = 0;
+            offxSlider.value = offxNum.value = 0;
+            drawToPreview(canvas, noBg, autoScale / 100, 0, 0);
+            products[side].snapshot = snapshotCanvas(canvas);
+        } catch (err) {
+            ctx.clearRect(0, 0, PREVIEW_W, PREVIEW_H);
+            ctx.fillStyle = '#f87171';
+            ctx.fillText('处理失败，请重试', PREVIEW_W / 2, PREVIEW_H / 2);
+            ctx.textAlign = 'left';
+            console.error(err);
+        }
+    });
+
+    // 点击预览大图
+    canvas.addEventListener('click', () => {
+        if (!products[side].noBg) return;
+        document.getElementById('lightboxImg').src = canvas.toDataURL('image/png');
+        document.getElementById('lightboxOverlay').classList.add('show');
+    });
+}
+
+// ═══════════════════════════════════════════════════
+//  文字渲染
+// ═══════════════════════════════════════════════════
+function drawSubtitle(ctx, text, x, y, fontSize, color, highlightWords, hlColor) {
+    if (!text) return;
+    ctx.textBaseline = 'top';
+    if (!highlightWords || !highlightWords.trim()) {
+        ctx.font = `400 ${fontSize}px "PingFang SC"`;
+        ctx.fillStyle = color;
+        ctx.fillText(text, x, y);
+        return;
     }
-
-    function escapeHtml(s){return(s||'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
-
-    function bindSliderAndNumber(slider,num){
-        if(!slider||!num) return;
-        slider.addEventListener('input',()=>{num.value=slider.value;});
-        num.addEventListener('input',()=>{slider.value=num.value;});
+    const words = highlightWords.split(',').map(w => w.trim()).filter(Boolean);
+    const regex = new RegExp(`(${words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+    const parts = []; let last = 0, m;
+    while ((m = regex.exec(text)) !== null) {
+        if (m.index > last) parts.push({ t: text.slice(last, m.index), hi: false });
+        parts.push({ t: m[0], hi: true });
+        last = regex.lastIndex;
     }
+    if (last < text.length) parts.push({ t: text.slice(last), hi: false });
+    let curX = x;
+    parts.forEach(p => {
+        ctx.font = `${p.hi ? 600 : 400} ${fontSize}px "PingFang SC"`;
+        ctx.fillStyle = p.hi ? hlColor : color;
+        ctx.fillText(p.t, curX, y);
+        curX += ctx.measureText(p.t).width;
+    });
+}
 
-    function renderAllPairs(){
-        const container=document.getElementById('productPairsContainer');
-        container.innerHTML='';
-        for(let i=0;i<productPairs.length;i++){
-            const p=productPairs[i];
-            const div=document.createElement('div');
-            div.className='product-pair';
-            div.innerHTML=`
-<div class="pair-header">
-    <div class="pair-index">会场 ${i+1}</div>
-    <button class="pair-text-toggle">收起文案</button>
-    <button class="remove-pair">删除</button>
-</div>
-<div class="pair-upload">
-    <div class="item">
-        <span class="item-label-text">商品 A（底层）</span>
-        <input type="file" class="pairAFile" accept="image/*">
-        <div class="prod-preview-canvas-wrap">
-            <canvas class="previewCanvasA" width="${PREVIEW_W}" height="${PREVIEW_H}"></canvas>
-            <div class="preview-hint">上传后自动 AI 抠图</div>
-        </div>
-        <span class="adv-toggle adv-toggle-a">精细调整</span>
-        <div class="advanced-options adv-a">
-            <div class="control-group"><label>边缘柔化:</label><input type="range" min="0" max="20" value="0" class="threshold-slider"><input type="number" min="0" max="20" value="0" class="threshold-num"></div>
-            <div class="control-group"><label>缩放(%):</label><input type="range" min="30" max="200" value="100" step="1" class="scale-slider"><input type="number" min="30" max="200" value="100" step="1" class="scale-num"></div>
-            <div class="control-group"><label>垂直偏移:</label><input type="range" min="-150" max="150" value="0" class="offset-slider"><input type="number" min="-150" max="150" value="0" class="offset-num"></div>
-            <div class="control-group"><label>横向偏移:</label><input type="range" min="-150" max="150" value="0" class="offsetx-slider"><input type="number" min="-150" max="150" value="0" class="offsetx-num"></div>
-        </div>
-    </div>
-    <div class="item">
-        <span class="item-label-text">商品 B（上层）</span>
-        <input type="file" class="pairBFile" accept="image/*">
-        <div class="prod-preview-canvas-wrap">
-            <canvas class="previewCanvasB" width="${PREVIEW_W}" height="${PREVIEW_H}"></canvas>
-            <div class="preview-hint">上传后自动 AI 抠图</div>
-        </div>
-        <span class="adv-toggle adv-toggle-b">精细调整</span>
-        <div class="advanced-options adv-b">
-            <div class="control-group"><label>边缘柔化:</label><input type="range" min="0" max="20" value="0" class="threshold-slider"><input type="number" min="0" max="20" value="0" class="threshold-num"></div>
-            <div class="control-group"><label>缩放(%):</label><input type="range" min="30" max="200" value="100" step="1" class="scale-slider"><input type="number" min="30" max="200" value="100" step="1" class="scale-num"></div>
-            <div class="control-group"><label>垂直偏移:</label><input type="range" min="-150" max="150" value="0" class="offset-slider"><input type="number" min="-150" max="150" value="0" class="offset-num"></div>
-            <div class="control-group"><label>横向偏移:</label><input type="range" min="-150" max="150" value="0" class="offsetx-slider"><input type="number" min="-150" max="150" value="0" class="offsetx-num"></div>
-        </div>
-    </div>
-</div>
-<div class="pair-text-config">
-    <div class="text-config-section">
-        <div class="text-block"><div class="text-block-title">主标题（最多8字）</div><input type="text" class="text-input pairMainTitle" placeholder="例如：520新品" maxlength="8" value="${escapeHtml(p.mainTitle||'')}"></div>
-        <div class="text-block"><div class="text-block-title">副标题</div><input type="text" class="text-input pairSubTitle" placeholder="例如：满额400 享12期免息" value="${escapeHtml(p.subTitle||'')}"></div>
-        <div class="text-block"><div class="text-block-title">高亮词（逗号分隔）</div><input type="text" class="text-input pairHighlightWords" placeholder="例如：400,12期免息" value="${escapeHtml(p.highlightWords||'')}"></div>
-    </div>
-</div>`;
-            container.appendChild(div);
+// ═══════════════════════════════════════════════════
+//  生成头图
+// ═══════════════════════════════════════════════════
+async function generate() {
+    if (!products.A.snapshot || !products.B.snapshot) {
+        showStatus('请先上传并处理两张商品图'); return;
+    }
+    showStatus('生成中…', 0);
 
-            const aFile    = div.querySelector('.pairAFile');
-            const bFile    = div.querySelector('.pairBFile');
-            const canvasA  = div.querySelector('.previewCanvasA');
-            const canvasB  = div.querySelector('.previewCanvasB');
-            const panelA   = div.querySelector('.adv-a');
-            const panelB   = div.querySelector('.adv-b');
+    const canvas = document.createElement('canvas');
+    canvas.width = CANVAS_W; canvas.height = CANVAS_H;
+    const ctx = canvas.getContext('2d');
 
-            if(p.noBgA) drawToPreview(canvasA, p.noBgA, (parseInt(panelA.querySelector('.scale-slider').value)||100)/100, parseInt(panelA.querySelector('.offset-slider').value)||0, parseInt(panelA.querySelector('.offsetx-slider').value)||0);
-            if(p.noBgB) drawToPreview(canvasB, p.noBgB, (parseInt(panelB.querySelector('.scale-slider').value)||100)/100, parseInt(panelB.querySelector('.offset-slider').value)||0, parseInt(panelB.querySelector('.offsetx-slider').value)||0);
+    // 1. 底图
+    ctx.drawImage(bgImg, 0, 0, CANVAS_W, CANVAS_H);
 
-            canvasA.addEventListener('click', () => openLightbox(canvasA));
-            canvasB.addEventListener('click', () => openLightbox(canvasB));
+    // 2. 左右装饰
+    const drawScaled = (img, x, y, tw) => ctx.drawImage(img, x, y, tw, img.height * (tw / img.width));
+    drawScaled(decoLeft,  DECO_LEFT_POS.x,  DECO_LEFT_POS.y,  DECO_LEFT_POS.width);
+    drawScaled(decoRight, DECO_RIGHT_POS.x, DECO_RIGHT_POS.y, DECO_RIGHT_POS.width);
 
-            div.querySelector('.adv-toggle-a').addEventListener('click', () => panelA.classList.toggle('show'));
-            div.querySelector('.adv-toggle-b').addEventListener('click', () => panelB.classList.toggle('show'));
+    // 3. 商品图
+    const drawSnap = (snap, x, y) => new Promise(res => {
+        const img = new Image(); img.onload = () => { ctx.drawImage(img, x, y, snap.w, snap.h); res(); };
+        img.src = snap.dataURL;
+    });
+    const ax = CANVAS_W - RIGHT_MARGIN - products.A.snapshot.w;
+    const ay = CANVAS_H - BOTTOM_MARGIN - products.A.snapshot.h;
+    await drawSnap(products.A.snapshot, ax, ay);
+    await drawSnap(products.B.snapshot, ax + PROD2_OFFSET_X, CANVAS_H - BOTTOM_MARGIN - products.B.snapshot.h);
 
-            const bindPanel = (panel, canvas, side) => {
-                const tSlider = panel.querySelector('.threshold-slider'), tNum = panel.querySelector('.threshold-num');
-                const sSlider = panel.querySelector('.scale-slider'),     sNum = panel.querySelector('.scale-num');
-                const oSlider = panel.querySelector('.offset-slider'),    oNum = panel.querySelector('.offset-num');
-                const xSlider = panel.querySelector('.offsetx-slider'),   xNum = panel.querySelector('.offsetx-num');
+    // 4. 品宣条置顶
+    drawScaled(deco4Img, DECO4_POS.x, DECO4_POS.y, DECO4_POS.width);
 
-                bindSliderAndNumber(tSlider, tNum);
-                bindSliderAndNumber(sSlider, sNum);
-                bindSliderAndNumber(oSlider, oNum);
-                bindSliderAndNumber(xSlider, xNum);
+    // 5. 文字
+    const mainTitle = document.getElementById('mainTitle').value;
+    const subTitle  = document.getElementById('subTitle').value;
+    const highlight = document.getElementById('highlightWords').value;
 
-                const refresh = () => {
-                    const noBg = side==='a' ? productPairs[i].noBgA : productPairs[i].noBgB;
-                    if(!noBg) return;
-                    const scale   = (parseFloat(sNum.value)||100) / 100;
-                    const offset  = parseInt(oNum.value)||0;
-                    const offsetX = parseInt(xNum.value)||0;
-                    drawToPreview(canvas, noBg, scale, offset, offsetX);
-                    if(side==='a') productPairs[i].snapshotA = snapshotPreview(canvas);
-                    else           productPairs[i].snapshotB = snapshotPreview(canvas);
-                };
-
-                sSlider.addEventListener('input', refresh);
-                sNum.addEventListener('input', refresh);
-                oSlider.addEventListener('input', refresh);
-                oNum.addEventListener('input', refresh);
-                xSlider.addEventListener('input', refresh);
-                xNum.addEventListener('input', refresh);
-
-                const reThreshold = async () => {
-                    const fileInput = side==='a' ? aFile : bFile;
-                    if(!fileInput.files.length) return;
-                    const noBg = await loadAndRemoveBg(fileInput.files[0], parseInt(tNum.value)||0);
-                    if(side==='a') productPairs[i].noBgA = noBg;
-                    else           productPairs[i].noBgB = noBg;
-                    refresh();
-                };
-                tSlider.addEventListener('change', reThreshold);
-                tNum.addEventListener('change', reThreshold);
-            };
-
-            bindPanel(panelA, canvasA, 'a');
-            bindPanel(panelB, canvasB, 'b');
-
-            const handleFile = async (file, side, canvas, panel) => {
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = '14px system-ui';
-                ctx.textAlign = 'center';
-
-                let noBg;
-                const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
-
-                const hasTransparency = isPng && await new Promise(res => {
-                    const url = URL.createObjectURL(file);
-                    const img = new Image();
-                    img.onload = () => {
-                        URL.revokeObjectURL(url);
-                        const c = document.createElement('canvas');
-                        c.width = img.naturalWidth; c.height = img.naturalHeight;
-                        const ctx2 = c.getContext('2d');
-                        ctx2.drawImage(img, 0, 0);
-                        const d = ctx2.getImageData(0, 0, c.width, c.height).data;
-                        const step = 4 * 8;
-                        for (let i = 3; i < d.length; i += step) {
-                            if (d[i] < 250) { res(true); return; }
-                        }
-                        res(false);
-                    };
-                    img.onerror = () => res(false);
-                    img.src = url;
-                });
-
-                if (hasTransparency) {
-                    ctx.fillText('PNG 透明背景已识别，跳过抠图…', canvas.width/2, canvas.height/2);
-                    ctx.textAlign = 'left';
-                    noBg = await new Promise((res, rej) => {
-                        const url = URL.createObjectURL(file);
-                        const img = new Image();
-                        img.onload = () => {
-                            URL.revokeObjectURL(url);
-                            const c = document.createElement('canvas');
-                            c.width = img.naturalWidth; c.height = img.naturalHeight;
-                            const ctx2 = c.getContext('2d');
-                            ctx2.drawImage(img, 0, 0);
-                            const wmX = Math.floor(c.width * 0.80);
-                            const wmY = Math.floor(c.height * 0.92);
-                            ctx2.clearRect(wmX, wmY, c.width - wmX, c.height - wmY);
-                            res(c);
-                        };
-                        img.onerror = rej;
-                        img.src = url;
-                    });
-                } else {
-                    ctx.fillText('AI 抠图中，请稍候…', canvas.width/2, canvas.height/2);
-                    ctx.textAlign = 'left';
-                    const feather = parseInt(panel.querySelector('.threshold-num').value)||0;
-                    noBg = await loadAndRemoveBg(file, feather);
-                }
-
-                const autoScale = calcAutoScale(noBg);
-                const autoScalePct = Math.round(autoScale * 100);
-                panel.querySelector('.scale-slider').value = autoScalePct;
-                panel.querySelector('.scale-num').value = autoScalePct;
-                panel.querySelector('.offset-slider').value = 0;
-                panel.querySelector('.offset-num').value = 0;
-                panel.querySelector('.offsetx-slider').value = 0;
-                panel.querySelector('.offsetx-num').value = 0;
-                const offset  = 0;
-                const offsetX = 0;
-                if(side==='a'){productPairs[i].noBgA=noBg;}
-                else           {productPairs[i].noBgB=noBg;}
-                drawToPreview(canvas, noBg, autoScale, offset, offsetX);
-                const snap = snapshotPreview(canvas);
-                if(side==='a') productPairs[i].snapshotA=snap;
-                else           productPairs[i].snapshotB=snap;
-            };
-
-            aFile.addEventListener('change', e=>{ if(e.target.files[0]) handleFile(e.target.files[0],'a',canvasA,panelA); });
-            bFile.addEventListener('change', e=>{ if(e.target.files[0]) handleFile(e.target.files[0],'b',canvasB,panelB); });
-
-            div.querySelector('.pairMainTitle').addEventListener('input',      e=>{productPairs[i].mainTitle=e.target.value;});
-            div.querySelector('.pairSubTitle').addEventListener('input',       e=>{productPairs[i].subTitle=e.target.value;});
-            div.querySelector('.pairHighlightWords').addEventListener('input', e=>{productPairs[i].highlightWords=e.target.value;});
-
-            const toggle=div.querySelector('.pair-text-toggle'), configDiv=div.querySelector('.pair-text-config');
-            let collapsed=false;
-            toggle.addEventListener('click',()=>{collapsed=!collapsed;configDiv.classList.toggle('collapsed',collapsed);toggle.textContent=collapsed?'展开文案':'收起文案';});
-
-            div.querySelector('.remove-pair').addEventListener('click',()=>{productPairs.splice(i,1);renderAllPairs();});
+    if (mainTitle) {
+        ctx.font = `400 ${TEXT_STYLE.mainSize}px "POIZONSans", "PingFang SC"`;
+        ctx.fillStyle = TEXT_STYLE.mainColor;
+        ctx.textBaseline = 'top';
+        let curX = TITLE_POS.x;
+        for (const char of mainTitle) {
+            ctx.fillText(char, curX, TITLE_POS.y);
+            curX += ctx.measureText(char).width + 3;
         }
     }
+    drawSubtitle(ctx, subTitle, SUBTITLE_POS.x, SUBTITLE_POS.y, TEXT_STYLE.subSize, TEXT_STYLE.subColor, highlight, TEXT_STYLE.highlightColor);
 
-    document.getElementById('addPairBtn').addEventListener('click',()=>{
-        productPairs.push({noBgA:null,noBgB:null,snapshotA:null,snapshotB:null,mainTitle:'',subTitle:'',highlightWords:''});
-        renderAllPairs();
+    // 显示到右侧画布
+    displayResult(canvas);
+    showStatus('✓ 生成完成');
+}
+
+// ═══════════════════════════════════════════════════
+//  右侧画布展示
+// ═══════════════════════════════════════════════════
+function displayResult(srcCanvas) {
+    const inner = document.getElementById('canvasInner');
+    document.getElementById('placeholder').style.display = 'none';
+
+    // 清除旧 canvas
+    const old = inner.querySelector('canvas');
+    if (old) old.remove();
+
+    const c = document.createElement('canvas');
+    c.width = CANVAS_W; c.height = CANVAS_H;
+    c.getContext('2d').drawImage(srcCanvas, 0, 0);
+    c.style.maxWidth = '100%';
+    inner.appendChild(c);
+
+    // 重置缩放到适合视口
+    fitToView();
+
+    // 双击大图
+    c.addEventListener('dblclick', () => {
+        document.getElementById('lightboxImg').src = c.toDataURL('image/png');
+        document.getElementById('lightboxOverlay').classList.add('show');
+    });
+}
+
+// ═══════════════════════════════════════════════════
+//  画布缩放 & 拖拽
+// ═══════════════════════════════════════════════════
+let scale = 1, translateX = 0, translateY = 0;
+let isDragging = false, dragStartX = 0, dragStartY = 0, dragOriginX = 0, dragOriginY = 0;
+let isLocked = false;
+
+function applyTransform() {
+    const inner = document.getElementById('canvasInner');
+    inner.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+}
+
+function fitToView() {
+    const panel = document.getElementById('rightPanel');
+    const pw = panel.clientWidth - 80, ph = panel.clientHeight - 80;
+    scale = Math.min(pw / CANVAS_W, ph / CANVAS_H, 1);
+    translateX = 0; translateY = 0;
+    applyTransform();
+}
+
+function setupCanvasControls() {
+    const wrapper = document.getElementById('canvasWrapper');
+
+    // 滚轮缩放
+    wrapper.addEventListener('wheel', e => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.08 : 0.08;
+        scale = Math.min(Math.max(scale + delta, 0.15), 4);
+        applyTransform();
+    }, { passive: false });
+
+    // 拖拽
+    wrapper.addEventListener('mousedown', e => {
+        if (isLocked) return;
+        isDragging = true;
+        dragStartX = e.clientX; dragStartY = e.clientY;
+        dragOriginX = translateX; dragOriginY = translateY;
+        wrapper.style.cursor = 'grabbing';
+    });
+    window.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        translateX = dragOriginX + (e.clientX - dragStartX);
+        translateY = dragOriginY + (e.clientY - dragStartY);
+        applyTransform();
+    });
+    window.addEventListener('mouseup', () => {
+        if (!isDragging) return;
+        isDragging = false;
+        wrapper.style.cursor = isLocked ? 'default' : 'grab';
     });
 
-    const statusEl = document.getElementById('statusMsg');
-    function showStatus(msg) {
-        statusEl.textContent = msg;
-        statusEl.classList.add('show');
-    }
-
-    document.getElementById('generateBtn').addEventListener('click', async()=>{
-        showStatus('⏳ 批量生成中...');
-        const area=document.getElementById('resultArea'), grid=document.getElementById('batchResultGrid');
-        try{
-            const res=await batchGenerate();
-            grid.innerHTML='';
-            const wrap=document.getElementById('canvasPreviewWrap');
-            wrap.innerHTML='';
-            res.forEach((r,idx)=>{
-                const card=document.createElement('div');card.className='result-card';
-                card.innerHTML=`<div style="font-size:12px;font-weight:600;color:#333;">会场 ${idx+1}</div><img src="${r.dataURL}" title="点击查看大图"><a href="${r.dataURL}" download="banner_${idx+1}.png">⬇ 下载</a>`;
-                card.querySelector('img').addEventListener('click', e => openLightbox(e.target.src));
-                grid.appendChild(card);
-                // 右侧展示最后一张
-                if(idx===res.length-1){
-                    const img=document.createElement('img');
-                    img.src=r.dataURL; img.style.maxWidth='100%'; img.style.maxHeight='100%';
-                    img.style.borderRadius='8px'; img.style.boxShadow='0 8px 32px rgba(0,0,0,0.15)';
-                    img.style.cursor='zoom-in';
-                    img.addEventListener('click',()=>openLightbox(img.src));
-                    wrap.appendChild(img);
-                }
-            });
-            area.classList.add('show');
-            showStatus(`✅ 已生成 ${res.length} 张`);
-        }catch(err){showStatus(`❌ ${err.message}`);}
+    // 工具栏按钮
+    document.getElementById('zoomInBtn').addEventListener('click', () => {
+        scale = Math.min(scale + 0.15, 4); applyTransform();
     });
-
-    document.getElementById('downloadAllBtn').addEventListener('click',()=>{
-        if(!generatedResults.length){showStatus('请先点击批量生成');return;}
-        const zip=new JSZip();
-        generatedResults.forEach((r,i)=>zip.file(`banner_${i+1}.png`,r.dataURL.split(',')[1],{base64:true}));
-        zip.generateAsync({type:'blob'}).then(blob=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`banners_${Date.now()}.zip`;a.click();URL.revokeObjectURL(a.href);});
+    document.getElementById('zoomOutBtn').addEventListener('click', () => {
+        scale = Math.max(scale - 0.15, 0.15); applyTransform();
     });
+    document.getElementById('zoomResetBtn').addEventListener('click', fitToView);
+    document.getElementById('lockBtn').addEventListener('click', e => {
+        isLocked = !isLocked;
+        e.currentTarget.classList.toggle('active', isLocked);
+        wrapper.style.cursor = isLocked ? 'default' : 'grab';
+    });
+}
 
-    function openLightbox(source) {
-        const overlay = document.getElementById('lightboxOverlay');
-        const img     = document.getElementById('lightboxImg');
-        img.src = (typeof source === 'string') ? source : source.toDataURL('image/png');
-        overlay.classList.add('show');
+// ═══════════════════════════════════════════════════
+//  Lightbox
+// ═══════════════════════════════════════════════════
+function setupLightbox() {
+    document.getElementById('lightboxOverlay').addEventListener('click', function() {
+        this.classList.remove('show');
+    });
+}
+
+// ═══════════════════════════════════════════════════
+//  初始化
+// ═══════════════════════════════════════════════════
+(async () => {
+    try {
+        await loadAssets();
+    } catch (e) {
+        console.warn('部分素材加载失败', e);
     }
-    (function bindLightboxClose(){
-        const el = document.getElementById('lightboxOverlay');
-        if(el) el.addEventListener('click', () => el.classList.remove('show'));
-    })();
+    initCategories();
+    bindProductUpload('A');
+    bindProductUpload('B');
+    setupCanvasControls();
+    setupLightbox();
 
-    async function initDeco4(){
-        deco4Img = await new Promise((res, rej) => {
-            const img = new Image();
-            img.onload = () => res(img);
-            img.onerror = rej;
-            img.src = 'deco4.png';
-        });
-    }
-
-    bindGlobalEvents();
-    productPairs.push({noBgA:null,noBgB:null,snapshotA:null,snapshotB:null,mainTitle:'',subTitle:'',highlightWords:''});
-    renderAllPairs();
-    initDeco4();
+    document.getElementById('generateBtn').addEventListener('click', generate);
 })();
 </script>
 </body>
