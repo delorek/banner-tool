@@ -18,11 +18,11 @@
 
         /* ── 左侧面板 ── */
         .left-panel {
-            width: 380px;
+            width: 460px;
             background: white;
             overflow-y: auto;
             border-right: 1px solid #e0e0e0;
-            padding: 24px 20px;
+            padding: 28px 24px;
             box-shadow: 2px 0 8px rgba(0,0,0,0.04);
             flex-shrink: 0;
             display: flex;
@@ -59,17 +59,39 @@
             border-radius: 10px; padding: 12px;
         }
         .pair-upload { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        .upload-item { background: white; border-radius: 8px; padding: 10px; border: 1px solid #e8e8e8; }
-        .upload-item-label { font-size: 11px; font-weight: 600; color: #555; display: block; margin-bottom: 6px; }
-        .upload-item input[type="file"] { width: 100%; font-size: 11px; }
 
-        .prod-preview-canvas-wrap { margin-top: 8px; }
+        /* 可点击上传画框 */
+        .upload-item {
+            background: white; border-radius: 8px; border: 1.5px dashed #d0d0d0;
+            cursor: pointer; position: relative; transition: border-color 0.15s;
+            display: flex; flex-direction: column;
+        }
+        .upload-item:hover { border-color: #06805c; }
+        .upload-item.has-image { border-style: solid; border-color: #c8e8df; }
+        .upload-item input[type="file"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+        }
+
+        /* 空态占位 */
+        .upload-placeholder {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; padding: 20px 10px; gap: 6px; pointer-events: none;
+        }
+        .upload-placeholder .plus { font-size: 24px; color: #c0c0c0; line-height: 1; }
+        .upload-item-label {
+            font-size: 12px; font-weight: 600; color: #888;
+            text-align: center; pointer-events: none;
+        }
+        /* 有图后隐藏占位 */
+        .upload-item.has-image .upload-placeholder { display: none; }
+
+        .prod-preview-canvas-wrap { display: none; }
+        .upload-item.has-image .prod-preview-canvas-wrap { display: block; }
         .prod-preview-canvas-wrap canvas {
             display: block; width: 100% !important; height: auto !important;
-            border-radius: 7px; border: 1px solid #e4e4e4;
-            background: #f4f4f4; cursor: zoom-in;
+            border-radius: 7px; background: #f4f4f4; cursor: zoom-in;
         }
-        .preview-hint { font-size: 10px; color: #bbb; margin-top: 4px; line-height: 1.5; }
+        .preview-hint { font-size: 10px; color: #bbb; margin: 4px 8px 6px; line-height: 1.5; }
 
         /* 精细调整 */
         .adv-toggle {
@@ -205,17 +227,40 @@
             </div>
         </div>
 
+        <!-- 文案 -->
+        <div>
+            <div class="section-label">文案配置</div>
+            <div class="text-section">
+                <div class="text-block">
+                    <label>主标题（最多 8 字）</label>
+                    <input type="text" class="text-input" id="mainTitle" maxlength="8" placeholder="例如：520新品">
+                </div>
+                <div class="text-block">
+                    <label>副标题</label>
+                    <input type="text" class="text-input" id="subTitle" placeholder="例如：满额400 享12期免息">
+                </div>
+                <div class="text-block">
+                    <label>高亮词（逗号分隔）</label>
+                    <input type="text" class="text-input" id="highlightWords" placeholder="例如：400,12期免息">
+                </div>
+            </div>
+        </div>
+
         <!-- 商品图 -->
         <div>
             <div class="section-label">商品图</div>
             <div class="product-pair">
                 <div class="pair-upload">
-                    <div class="upload-item">
-                        <span class="upload-item-label">商品 A（底层）</span>
+                    <!-- 商品 A -->
+                    <div class="upload-item" id="uploadItemA">
                         <input type="file" id="fileA" accept="image/*">
+                        <div class="upload-placeholder">
+                            <span class="plus">+</span>
+                            <span class="upload-item-label">商品 A（底层）</span>
+                        </div>
                         <div class="prod-preview-canvas-wrap">
                             <canvas id="previewCanvasA" width="268" height="300"></canvas>
-                            <div class="preview-hint">上传后自动 AI 抠图</div>
+                            <div class="preview-hint">点击更换图片</div>
                         </div>
                         <span class="adv-toggle" id="advToggleA">精细调整</span>
                         <div class="advanced-options" id="advPanelA">
@@ -236,12 +281,16 @@
                             </div>
                         </div>
                     </div>
-                    <div class="upload-item">
-                        <span class="upload-item-label">商品 B（上层）</span>
+                    <!-- 商品 B -->
+                    <div class="upload-item" id="uploadItemB">
                         <input type="file" id="fileB" accept="image/*">
+                        <div class="upload-placeholder">
+                            <span class="plus">+</span>
+                            <span class="upload-item-label">商品 B（上层）</span>
+                        </div>
                         <div class="prod-preview-canvas-wrap">
                             <canvas id="previewCanvasB" width="268" height="300"></canvas>
-                            <div class="preview-hint">上传后自动 AI 抠图</div>
+                            <div class="preview-hint">点击更换图片</div>
                         </div>
                         <span class="adv-toggle" id="advToggleB">精细调整</span>
                         <div class="advanced-options" id="advPanelB">
@@ -271,27 +320,8 @@
             </div>
         </div>
 
-        <!-- 文案 -->
-        <div>
-            <div class="section-label">文案配置</div>
-            <div class="text-section">
-                <div class="text-block">
-                    <label>主标题（最多 8 字）</label>
-                    <input type="text" class="text-input" id="mainTitle" maxlength="8" placeholder="例如：520新品">
-                </div>
-                <div class="text-block">
-                    <label>副标题</label>
-                    <input type="text" class="text-input" id="subTitle" placeholder="例如：满额400 享12期免息">
-                </div>
-                <div class="text-block">
-                    <label>高亮词（逗号分隔）</label>
-                    <input type="text" class="text-input" id="highlightWords" placeholder="例如：400,12期免息">
-                </div>
-            </div>
-        </div>
-
         <!-- 生成按钮 -->
-        <button class="gen-btn" id="generateBtn">生成头图</button>
+        <button class="gen-btn" id="generateBtn">🎨 生成头图</button>
     </div>
 
     <!-- ══ 右侧画布 ══ -->
@@ -514,6 +544,7 @@ function blobToCanvas(blob) {
 // ═══════════════════════════════════════════════════
 function bindProductUpload(side) {
     const fileEl      = document.getElementById(`file${side}`);
+    const uploadItem  = document.getElementById(`uploadItem${side}`);
     const canvas      = document.getElementById(`previewCanvas${side}`);
     const advToggle   = document.getElementById(`advToggle${side}`);
     const advPanel    = document.getElementById(`advPanel${side}`);
@@ -524,11 +555,13 @@ function bindProductUpload(side) {
     const offxSlider  = document.getElementById(`offsetxSlider${side}`);
     const offxNum     = document.getElementById(`offsetxNum${side}`);
 
-    // 精细调整折叠
-    advToggle.addEventListener('click', () => {
+    // 精细调整折叠（阻止冒泡，防止触发 file input）
+    advToggle.addEventListener('click', e => {
+        e.stopPropagation();
         const open = advPanel.classList.toggle('show');
         advToggle.classList.toggle('open', open);
     });
+    advPanel.addEventListener('click', e => e.stopPropagation());
 
     // 滑块联动
     const refresh = () => {
@@ -563,6 +596,7 @@ function bindProductUpload(side) {
             offxSlider.value = offxNum.value = 0;
             drawToPreview(canvas, noBg, autoScale / 100, 0, 0);
             products[side].snapshot = snapshotCanvas(canvas);
+            uploadItem.classList.add('has-image');
         } catch (err) {
             ctx.clearRect(0, 0, PREVIEW_W, PREVIEW_H);
             ctx.fillStyle = '#f87171';
@@ -572,9 +606,10 @@ function bindProductUpload(side) {
         }
     });
 
-    // 点击预览大图
-    canvas.addEventListener('click', () => {
+    // 点击预览大图（阻止冒泡，不触发 file input）
+    canvas.addEventListener('click', e => {
         if (!products[side].noBg) return;
+        e.stopPropagation();
         document.getElementById('lightboxImg').src = canvas.toDataURL('image/png');
         document.getElementById('lightboxOverlay').classList.add('show');
     });
