@@ -35,36 +35,39 @@
         .panel-title { font-size: 17px; font-weight: 700; color: #1a1a1a; margin: 0; }
 
         .section-label {
-            font-size: 11px; font-weight: 700; color: #888;
-            text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;
+            font-size: 15px; font-weight: 700; color: #1a1a1a;
+            letter-spacing: 0.2px; margin-bottom: 12px;
         }
 
-        /* ── 品类选择 ── */
-        .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .category-card {
-            border: 2px solid #e8e8e8; border-radius: 10px; padding: 8px;
-            cursor: pointer; transition: all 0.18s; background: white;
+        /* ── 品类选择 — 单选按钮组 ── */
+        .category-radio-group { display: flex; gap: 24px; align-items: center; }
+        .category-radio-item { display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; }
+        .category-radio-item input[type="radio"] { display: none; }
+        .radio-circle {
+            width: 18px; height: 18px; border-radius: 50%;
+            border: 2px solid #ccc; background: white;
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color 0.15s;
+            flex-shrink: 0;
         }
-        .category-card:hover { border-color: #06805c; }
-        .category-card.active { border-color: #06805c; background: #f0f9f6; }
-        .category-card img { width: 100%; border-radius: 6px; display: block; }
-        .category-card .cat-label {
-            font-size: 12px; font-weight: 600; color: #333;
-            text-align: center; margin-top: 6px;
+        .radio-circle::after {
+            content: ''; width: 8px; height: 8px; border-radius: 50%;
+            background: #06805c; opacity: 0; transition: opacity 0.15s;
         }
+        .category-radio-item input[type="radio"]:checked + .radio-circle { border-color: #06805c; }
+        .category-radio-item input[type="radio"]:checked + .radio-circle::after { opacity: 1; }
+        .radio-label { font-size: 13px; color: #48484D; font-weight: 600; }
 
         /* ── 商品图 ── */
-        .product-pair {
-            background: #fafafa; border: 1px solid #ebebeb;
-            border-radius: 10px; padding: 12px;
-        }
-        .pair-upload { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .product-pair { margin-bottom: 8px; }
+        .pair-upload { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
 
         /* 可点击上传画框 */
         .upload-item {
             background: white; border-radius: 8px; border: 1.5px dashed #d0d0d0;
             cursor: pointer; position: relative; transition: border-color 0.15s;
             display: flex; flex-direction: column;
+            min-height: 160px;
         }
         .upload-item:hover { border-color: #06805c; }
         .upload-item.has-image { border-style: solid; border-color: #c8e8df; }
@@ -72,37 +75,39 @@
             position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
         }
 
-        /* 空态占位 */
+        /* 空态占位 — 撑满整个画框 */
         .upload-placeholder {
+            flex: 1;
             display: flex; flex-direction: column; align-items: center;
-            justify-content: center; padding: 20px 10px; gap: 6px; pointer-events: none;
+            justify-content: center; gap: 6px; pointer-events: none;
+            min-height: 160px;
         }
         .upload-placeholder .plus { font-size: 24px; color: #c0c0c0; line-height: 1; }
         .upload-item-label {
-            font-size: 12px; font-weight: 600; color: #888;
+            font-size: 12px; font-weight: 600; color: #aaa;
             text-align: center; pointer-events: none;
         }
         /* 有图后隐藏占位 */
         .upload-item.has-image .upload-placeholder { display: none; }
 
-        .prod-preview-canvas-wrap { display: none; }
-        .upload-item.has-image .prod-preview-canvas-wrap { display: block; }
+        .prod-preview-canvas-wrap { display: none; flex-direction: column; }
+        .upload-item.has-image .prod-preview-canvas-wrap { display: flex; }
         .prod-preview-canvas-wrap canvas {
             display: block; width: 100% !important; height: auto !important;
             border-radius: 7px; background: #f4f4f4; cursor: zoom-in;
         }
         .preview-hint { font-size: 10px; color: #bbb; margin: 4px 8px 6px; line-height: 1.5; }
 
-        /* 精细调整 */
+        /* 精细调整 — 放在画框外部 */
         .adv-toggle {
             font-size: 11px; color: #06805c; cursor: pointer;
-            margin-top: 8px; display: inline-flex; align-items: center; gap: 4px;
+            margin-top: 6px; display: inline-flex; align-items: center; gap: 4px;
             user-select: none;
         }
         .adv-toggle::before { content: '▶'; font-size: 9px; transition: transform 0.2s; }
         .adv-toggle.open::before { transform: rotate(90deg); }
         .advanced-options {
-            margin-top: 6px; padding: 10px; background: #f0f9f6;
+            margin-top: 4px; padding: 10px; background: #f0f9f6;
             border-radius: 8px; display: none; border: 1px solid #c8e8df;
         }
         .advanced-options.show { display: block; }
@@ -113,16 +118,32 @@
         .control-group input[type="number"] { width: 50px; padding: 3px 5px; border-radius: 5px; border: 1px solid #ccc; font-size: 11px; }
 
         /* 文案 */
-        .text-section { display: flex; flex-direction: column; gap: 10px; }
-        .text-block label { display: block; font-size: 11px; font-weight: 600; color: #555; margin-bottom: 5px; }
+        .text-section { display: flex; flex-direction: column; gap: 16px; }
+        .text-block label { display: block; font-size: 13px; font-weight: 700; color: #48484D; margin-bottom: 6px; }
         .text-input {
-            width: 100%; padding: 8px 10px; border: 1px solid #ddd;
+            width: 100%; padding: 11px 12px; border: 1px solid #ddd;
             border-radius: 7px; font-size: 13px; background: white;
-            transition: border-color 0.15s;
+            color: #48484D; transition: border-color 0.15s;
         }
+        .text-input::placeholder { color: #c8c8c8; }
         .text-input:focus { outline: none; border-color: #06805c; box-shadow: 0 0 0 3px rgba(6,128,92,0.08); }
 
-        .upload-hint { font-size: 11px; color: #aaa; line-height: 1.6; }
+        /* ── 左侧面板模块分隔 ── */
+        .panel-section {
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        /* 品类→文案 间距小一点 */
+        .panel-section.section-cat { padding-bottom: 14px; }
+        /* 文案→商品图 去掉分隔线，间距小一点 */
+        .panel-section.section-text { border-bottom: none; padding-bottom: 14px; }
+        .panel-section:last-of-type { border-bottom: none; padding-bottom: 0; }
+
+        .upload-hint {
+            font-size: 11px; color: #aaa; line-height: 1.7;
+            background: #f5f5f5; border-radius: 7px;
+            padding: 10px 12px; margin-top: 14px;
+        }
 
         /* ── 生成按钮 ── */
         .gen-btn {
@@ -213,42 +234,44 @@
         <h1 class="panel-title">配置分会场头图</h1>
 
         <!-- 品类选择 -->
-        <div>
-            <div class="section-label">品类选择</div>
-            <div class="category-grid" id="categoryGrid">
-                <div class="category-card active" data-cat="other">
-                    <img src="template.png" alt="其他品类">
-                    <div class="cat-label">其他品类</div>
-                </div>
-                <div class="category-card" data-cat="shoes">
-                    <img src="template.png" alt="鞋类">
-                    <div class="cat-label">鞋类</div>
-                </div>
+        <div class="panel-section section-cat">
+            <div class="section-label">📋 品类选择</div>
+            <div class="category-radio-group" id="categoryGrid">
+                <label class="category-radio-item">
+                    <input type="radio" name="category" value="other" checked>
+                    <span class="radio-circle"></span>
+                    <span class="radio-label">其他品类</span>
+                </label>
+                <label class="category-radio-item">
+                    <input type="radio" name="category" value="shoes">
+                    <span class="radio-circle"></span>
+                    <span class="radio-label">鞋类</span>
+                </label>
             </div>
         </div>
 
         <!-- 文案 -->
-        <div>
-            <div class="section-label">文案配置</div>
+        <div class="panel-section section-text">
+            <div class="section-label">✏️ 文案配置</div>
             <div class="text-section">
                 <div class="text-block">
                     <label>主标题（最多 8 字）</label>
-                    <input type="text" class="text-input" id="mainTitle" maxlength="8" placeholder="例如：520新品">
+                    <input type="text" class="text-input" id="mainTitle" maxlength="8" placeholder="520奢包特惠">
                 </div>
                 <div class="text-block">
                     <label>副标题</label>
-                    <input type="text" class="text-input" id="subTitle" placeholder="例如：满额400 享12期免息">
+                    <input type="text" class="text-input" id="subTitle" placeholder="最高减450 享12期分期">
                 </div>
                 <div class="text-block">
                     <label>高亮词（逗号分隔）</label>
-                    <input type="text" class="text-input" id="highlightWords" placeholder="例如：400,12期免息">
+                    <input type="text" class="text-input" id="highlightWords" placeholder="450,1折起">
                 </div>
             </div>
         </div>
 
         <!-- 商品图 -->
-        <div>
-            <div class="section-label">商品图</div>
+        <div class="panel-section">
+            <div class="section-label">🛍️ 商品图</div>
             <div class="product-pair">
                 <div class="pair-upload">
                     <!-- 商品 A -->
@@ -262,6 +285,23 @@
                             <canvas id="previewCanvasA" width="268" height="300"></canvas>
                             <div class="preview-hint">点击更换图片</div>
                         </div>
+                    </div>
+                    <!-- 商品 B -->
+                    <div class="upload-item" id="uploadItemB">
+                        <input type="file" id="fileB" accept="image/*">
+                        <div class="upload-placeholder">
+                            <span class="plus">+</span>
+                            <span class="upload-item-label">商品 B（上层）</span>
+                        </div>
+                        <div class="prod-preview-canvas-wrap">
+                            <canvas id="previewCanvasB" width="268" height="300"></canvas>
+                            <div class="preview-hint">点击更换图片</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 精细调整放画框外 -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <div>
                         <span class="adv-toggle" id="advToggleA">精细调整</span>
                         <div class="advanced-options" id="advPanelA">
                             <div class="control-group">
@@ -281,17 +321,7 @@
                             </div>
                         </div>
                     </div>
-                    <!-- 商品 B -->
-                    <div class="upload-item" id="uploadItemB">
-                        <input type="file" id="fileB" accept="image/*">
-                        <div class="upload-placeholder">
-                            <span class="plus">+</span>
-                            <span class="upload-item-label">商品 B（上层）</span>
-                        </div>
-                        <div class="prod-preview-canvas-wrap">
-                            <canvas id="previewCanvasB" width="268" height="300"></canvas>
-                            <div class="preview-hint">点击更换图片</div>
-                        </div>
+                    <div>
                         <span class="adv-toggle" id="advToggleB">精细调整</span>
                         <div class="advanced-options" id="advPanelB">
                             <div class="control-group">
@@ -313,15 +343,13 @@
                     </div>
                 </div>
                 <div class="upload-hint">
-                    抠图不理想？先去
-                    <a href="https://www.doubao.com/chat/create-image" target="_blank" style="color:#06805c;text-decoration:none;">豆包 AI 抠图</a>
-                    处理成透明 PNG 再上传，自动跳过抠图 ✨
+                    📌 抠图效果不理想？可先去<a href="https://www.doubao.com/chat/create-image" target="_blank" style="color:#06805c;text-decoration:none;">豆包 AI 抠图</a>处理后下载 PNG 再上传，自动跳过抠图 ✨
                 </div>
             </div>
         </div>
 
         <!-- 生成按钮 -->
-        <button class="gen-btn" id="generateBtn">🎨 生成头图</button>
+        <button class="gen-btn" id="generateBtn">生成头图</button>
     </div>
 
     <!-- ══ 右侧画布 ══ -->
@@ -465,12 +493,8 @@ async function loadAssets() {
 //  品类选择
 // ═══════════════════════════════════════════════════
 function initCategories() {
-    document.querySelectorAll('.category-card').forEach(card => {
-        card.addEventListener('click', () => {
-            document.querySelectorAll('.category-card').forEach(c => c.classList.remove('active'));
-            card.classList.add('active');
-            currentCat = card.dataset.cat;
-        });
+    document.querySelectorAll('input[name="category"]').forEach(radio => {
+        radio.addEventListener('change', () => { currentCat = radio.value; });
     });
 }
 
