@@ -509,7 +509,10 @@ async function loadAssets() {
 // ═══════════════════════════════════════════════════
 function initCategories() {
     document.querySelectorAll('input[name="category"]').forEach(radio => {
-        radio.addEventListener('change', () => { currentCat = radio.value; });
+        radio.addEventListener('change', () => {
+            currentCat = radio.value;
+            schedulePreview();
+        });
     });
 }
 
@@ -608,6 +611,7 @@ function bindProductUpload(side) {
         if (!noBg) return;
         drawToPreview(canvas, noBg, parseFloat(scaleNum.value) / 100, parseInt(offNum.value) || 0, parseInt(offxNum.value) || 0);
         products[side].snapshot = snapshotCanvas(canvas);
+        schedulePreview();
     };
     bindSlider(scaleSlider, scaleNum, refresh);
     bindSlider(offSlider, offNum, refresh);
@@ -636,6 +640,7 @@ function bindProductUpload(side) {
             drawToPreview(canvas, noBg, autoScale / 100, 0, 0);
             products[side].snapshot = snapshotCanvas(canvas);
             uploadItem.classList.add('has-image');
+            schedulePreview();
         } catch (err) {
             ctx.clearRect(0, 0, PREVIEW_W, PREVIEW_H);
             ctx.fillStyle = '#f87171';
@@ -685,29 +690,38 @@ function drawSubtitle(ctx, text, x, y, fontSize, color, highlightWords, hlColor)
 }
 
 // ═══════════════════════════════════════════════════
-//  生成头图
+//  实时预览渲染（防抖 50ms）
 // ═══════════════════════════════════════════════════
-async function generate() {
-    if (!products.A.snapshot || !products.B.snapshot) {
-        showStatus('请先上传并处理两张商品图'); return;
-    }
-    showStatus('生成中…', 0);
+let _previewTimer = null;
+function schedulePreview() {
+    clearTimeout(_previewTimer);
+    _previewTimer = setTimeout(renderPreview, 50);
+}
+
+async function renderPreview() {
+    if (!bgImg) return;
 
     const canvas = document.createElement('canvas');
     canvas.width = CANVAS_W; canvas.height = CANVAS_H;
     const ctx = canvas.getContext('2d');
 
+    const drawScaled = (img, x, y, tw) => {
+        if (!img) return;
+        ctx.drawImage(img, x, y, tw, img.height * (tw / img.width));
+    };
+
     // 1. 底图
     ctx.drawImage(bgImg, 0, 0, CANVAS_W, CANVAS_H);
 
     // 2. 左右装饰
-    const drawScaled = (img, x, y, tw) => ctx.drawImage(img, x, y, tw, img.height * (tw / img.width));
     drawScaled(decoLeft,  DECO_LEFT_POS.x,  DECO_LEFT_POS.y,  DECO_LEFT_POS.width);
     drawScaled(decoRight, DECO_RIGHT_POS.x, DECO_RIGHT_POS.y, DECO_RIGHT_POS.width);
 
-    // 3. 商品图
+    // 3. 商品图（有哪张画哪张，不强制要求两张都有）
     const drawSnap = (snap, x, y) => new Promise(res => {
-        const img = new Image(); img.onload = () => { ctx.drawImage(img, x, y, snap.w, snap.h); res(); };
+        if (!snap) { res(); return; }
+        const img = new Image();
+        img.onload = () => { ctx.drawImage(img, x, y, snap.w, snap.h); res(); };
         img.src = snap.dataURL;
     });
     await drawSnap(products.A.snapshot, PROD_A_POS.x, PROD_A_POS.y);
@@ -733,41 +747,52 @@ async function generate() {
     }
     drawSubtitle(ctx, subTitle, SUBTITLE_POS.x, SUBTITLE_POS.y, TEXT_STYLE.subSize, TEXT_STYLE.subColor, highlight, TEXT_STYLE.highlightColor);
 
-    // 显示到右侧画布
-    displayResult(canvas);
+    // 更新右侧画布（不重置缩放，只刷新内容）
+    displayResult(canvas, false);
+}
+
+// ═══════════════════════════════════════════════════
+//  生成头图（触发下载用的完整渲染，复用 renderPreview 结果）
+// ═══════════════════════════════════════════════════
+async function generate() {
+    if (!products.A.snapshot || !products.B.snapshot) {
+        showStatus('请先上传并处理两张商品图'); return;
+    }
+    showStatus('生成中…', 0);
+    await renderPreview();
     showStatus('✓ 生成完成');
 
-    // 激活下载按钮
-    const dlBtn = document.getElementById('downloadBtn');
-    dlBtn.disabled = false;
-    dlBtn._canvas = canvas;
+    // 激活下载按钮，取右侧当前画布内容
+    const inner = document.getElementById('canvasInner');
+    const c = inner.querySelector('canvas');
+    if (c) {
+        const dlBtn = document.getElementById('downloadBtn');
+        dlBtn.disabled = false;
+        dlBtn._canvas = c;
+    }
 }
 
 // ═══════════════════════════════════════════════════
 //  右侧画布展示
 // ═══════════════════════════════════════════════════
-function displayResult(srcCanvas) {
+function displayResult(srcCanvas, resetView = true) {
     const inner = document.getElementById('canvasInner');
     document.getElementById('placeholder').style.display = 'none';
 
-    // 清除旧 canvas
-    const old = inner.querySelector('canvas');
-    if (old) old.remove();
-
-    const c = document.createElement('canvas');
-    c.width = CANVAS_W; c.height = CANVAS_H;
+    // 复用已有 canvas 而不是每次新建，避免 dblclick 重复绑定
+    let c = inner.querySelector('canvas');
+    if (!c) {
+        c = document.createElement('canvas');
+        c.width = CANVAS_W; c.height = CANVAS_H;
+        inner.appendChild(c);
+        c.addEventListener('dblclick', () => {
+            document.getElementById('lightboxImg').src = c.toDataURL('image/png');
+            document.getElementById('lightboxOverlay').classList.add('show');
+        });
+    }
     c.getContext('2d').drawImage(srcCanvas, 0, 0);
-    c.style.maxWidth = '100%';
-    inner.appendChild(c);
 
-    // 重置缩放到适合视口
-    fitToView();
-
-    // 双击大图
-    c.addEventListener('dblclick', () => {
-        document.getElementById('lightboxImg').src = c.toDataURL('image/png');
-        document.getElementById('lightboxOverlay').classList.add('show');
-    });
+    if (resetView) fitToView();
 }
 
 // ═══════════════════════════════════════════════════
@@ -859,6 +884,14 @@ function setupLightbox() {
     bindProductUpload('B');
     setupCanvasControls();
     setupLightbox();
+
+    // 文字输入实时触发预览
+    ['mainTitle', 'subTitle', 'highlightWords'].forEach(id => {
+        document.getElementById(id).addEventListener('input', schedulePreview);
+    });
+
+    // 素材加载完后立即渲染底图
+    renderPreview();
 
     document.getElementById('generateBtn').addEventListener('click', generate);
 
