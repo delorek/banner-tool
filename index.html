@@ -658,7 +658,7 @@ function bindProductUpload(side) {
             let noBg = await processFile(file);
             // 鞋类：旋转 35 度后再计算缩放
             if (currentCat === 'shoes') {
-                noBg = rotateCanvas(noBg, 35);
+                noBg = rotateCanvas(noBg, -35);
             }
             products[side].noBg = noBg;
             const autoScale = Math.round(calcAutoScale(noBg) * 100);
