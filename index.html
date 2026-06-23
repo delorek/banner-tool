@@ -437,6 +437,7 @@ const DECO_RIGHT_POS = { x: 895,  y: 307, width: 210 };
 const PREVIEW_W = 268, PREVIEW_H = 300;
 const PROD_A_POS = { x: 607, y: 198 };
 const PROD_B_POS = { x: 780, y: 198 };
+const PROD_B_POS_SHOES = { x: 780, y: 186 };
 const TITLE_POS    = { x: 42, y: 268 };
 const SUBTITLE_POS = { x: 42, y: 370 };
 
@@ -805,8 +806,9 @@ async function renderPreview() {
         img.onload = () => { ctx.drawImage(img, x, y, snap.w, snap.h); res(); };
         img.src = snap.dataURL;
     });
+    const bPos = currentCat === 'shoes' ? PROD_B_POS_SHOES : PROD_B_POS;
     await drawSnap(products.A.snapshot, PROD_A_POS.x, PROD_A_POS.y);
-    await drawSnap(products.B.snapshot, PROD_B_POS.x, PROD_B_POS.y);
+    await drawSnap(products.B.snapshot, bPos.x, bPos.y);
 
     // 4. 品宣条置顶
     drawScaled(deco4Img, DECO4_POS.x, DECO4_POS.y, DECO4_POS.width);
