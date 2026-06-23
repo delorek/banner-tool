@@ -38,6 +38,19 @@
             font-size: 15px; font-weight: 700; color: #1a1a1a;
             letter-spacing: 0.2px; margin-bottom: 12px;
         }
+        .section-label-row {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .section-label-row .section-label { margin-bottom: 0; }
+
+        .swap-btn {
+            padding: 4px 10px; background: #f5f5f5; color: #888;
+            border: 1px solid #e0e0e0; border-radius: 5px;
+            font-size: 11px; cursor: pointer; transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .swap-btn:hover { background: #e8e8e8; border-color: #ccc; color: #555; }
 
         /* ── 品类选择 — 单选按钮组 ── */
         .category-radio-group { display: flex; gap: 24px; align-items: center; }
@@ -156,6 +169,7 @@
         }
         .gen-btn:hover { background: #056b4a; }
         .gen-btn:active { background: #044f37; }
+
         .dl-btn {
             padding: 13px; background: #313133; color: white;
             border: none; border-radius: 8px; font-size: 14px; font-weight: 700;
@@ -249,7 +263,7 @@
             <div class="section-label">📋 品类选择</div>
             <div class="category-radio-group" id="categoryGrid">
                 <label class="category-radio-item">
-                    <input type="radio" name="category" value="other" checked>
+                    <input type="radio" name="category" value="other">
                     <span class="radio-circle"></span>
                     <span class="radio-label">其他品类</span>
                 </label>
@@ -282,7 +296,10 @@
 
         <!-- 商品图 -->
         <div class="panel-section">
-            <div class="section-label">🛍️ 商品图</div>
+            <div class="section-label-row">
+                <span class="section-label">🛍️ 商品图</span>
+                <button class="swap-btn" id="swapBtn">⇄ 互换</button>
+            </div>
             <div class="product-pair">
                 <div class="pair-upload">
                     <!-- 商品 A -->
@@ -330,6 +347,11 @@
                                 <input type="range" min="-150" max="150" value="0" id="offsetxSliderA">
                                 <input type="number" min="-150" max="150" value="0" id="offsetxNumA">
                             </div>
+                            <div class="control-group">
+                                <label>亮度(%):</label>
+                                <input type="range" min="50" max="150" value="100" id="briSliderA">
+                                <input type="number" min="50" max="150" value="100" id="briNumA">
+                            </div>
                         </div>
                     </div>
                     <div>
@@ -349,6 +371,11 @@
                                 <label>横向偏移:</label>
                                 <input type="range" min="-150" max="150" value="0" id="offsetxSliderB">
                                 <input type="number" min="-150" max="150" value="0" id="offsetxNumB">
+                            </div>
+                            <div class="control-group">
+                                <label>亮度(%):</label>
+                                <input type="range" min="50" max="150" value="100" id="briSliderB">
+                                <input type="number" min="50" max="150" value="100" id="briNumB">
                             </div>
                         </div>
                     </div>
@@ -461,6 +488,9 @@ function calcAutoScale(noBgCanvas) {
     return b.h * sw <= PREVIEW_H ? sw : PREVIEW_H / b.h;
 }
 
+function getPreviewW(side) { return PREVIEW_W; }
+function getPreviewH(side) { return PREVIEW_H; }
+
 // 将 canvas 内容旋转指定角度（度），返回新 canvas
 function rotateCanvas(src, degrees) {
     const rad = degrees * Math.PI / 180;
@@ -485,17 +515,32 @@ function rotateCanvas(src, degrees) {
     return out;
 }
 
-function drawToPreview(canvas, noBg, scale, offsetY, offsetX) {
+function drawToPreview(canvas, noBg, scale, offsetY, offsetX, brightness) {
+    const pw = canvas.width, ph = canvas.height;
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, PREVIEW_W, PREVIEW_H);
+    ctx.clearRect(0, 0, pw, ph);
     const b = getTrimBounds(noBg);
     if (!b) return;
     const dw = Math.round(b.w * scale), dh = Math.round(b.h * scale);
-    ctx.drawImage(noBg, b.x, b.y, b.w, b.h, (PREVIEW_W - dw) / 2 + offsetX, PREVIEW_H - dh + offsetY, dw, dh);
+    ctx.drawImage(noBg, b.x, b.y, b.w, b.h, (pw - dw) / 2 + offsetX, ph - dh + offsetY, dw, dh);
+
+    // 亮度调整
+    if (brightness && brightness !== 100) {
+        const imageData = ctx.getImageData(0, 0, pw, ph);
+        const d = imageData.data;
+        const factor = brightness / 100;
+        for (let i = 0; i < d.length; i += 4) {
+            if (d[i + 3] === 0) continue; // 跳过透明像素
+            d[i]     = Math.min(255, Math.max(0, d[i] * factor));
+            d[i + 1] = Math.min(255, Math.max(0, d[i + 1] * factor));
+            d[i + 2] = Math.min(255, Math.max(0, d[i + 2] * factor));
+        }
+        ctx.putImageData(imageData, 0, 0);
+    }
 }
 
 function snapshotCanvas(canvas) {
-    return { dataURL: canvas.toDataURL('image/png'), w: PREVIEW_W, h: PREVIEW_H };
+    return { dataURL: canvas.toDataURL('image/png'), w: canvas.width, h: canvas.height };
 }
 
 function bindSlider(slider, num, onChange) {
@@ -620,6 +665,8 @@ function bindProductUpload(side) {
     const offNum      = document.getElementById(`offsetNum${side}`);
     const offxSlider  = document.getElementById(`offsetxSlider${side}`);
     const offxNum     = document.getElementById(`offsetxNum${side}`);
+    const briSlider   = document.getElementById(`briSlider${side}`);
+    const briNum      = document.getElementById(`briNum${side}`);
 
     // 精细调整折叠（阻止冒泡，防止触发 file input）
     advToggle.addEventListener('click', e => {
@@ -633,46 +680,52 @@ function bindProductUpload(side) {
     const refresh = () => {
         const noBg = products[side].noBg;
         if (!noBg) return;
-        drawToPreview(canvas, noBg, parseFloat(scaleNum.value) / 100, parseInt(offNum.value) || 0, parseInt(offxNum.value) || 0);
+        drawToPreview(canvas, noBg, parseFloat(scaleNum.value) / 100, parseInt(offNum.value) || 0, parseInt(offxNum.value) || 0, parseInt(briNum.value) || 100);
         products[side].snapshot = snapshotCanvas(canvas);
         schedulePreview();
     };
     bindSlider(scaleSlider, scaleNum, refresh);
     bindSlider(offSlider, offNum, refresh);
     bindSlider(offxSlider, offxNum, refresh);
+    bindSlider(briSlider, briNum, refresh);
 
     // 文件上传
     fileEl.addEventListener('change', async e => {
         const file = e.target.files[0];
         if (!file) return;
 
+        // 更新画布尺寸
+        const pw = getPreviewW(side), ph = getPreviewH(side);
+        canvas.width = pw; canvas.height = ph;
+
         const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, PREVIEW_W, PREVIEW_H);
+        ctx.clearRect(0, 0, pw, ph);
         ctx.fillStyle = '#aaa';
         ctx.font = '14px system-ui';
         ctx.textAlign = 'center';
-        ctx.fillText('处理中，加载模型约10秒', PREVIEW_W / 2, PREVIEW_H / 2);
+        ctx.fillText('处理中，加载模型约10秒', pw / 2, ph / 2);
         ctx.textAlign = 'left';
 
         try {
             let noBg = await processFile(file);
-            // 鞋类：旋转 35 度后再计算缩放
+            // 鞋类：按商品分别旋转
             if (currentCat === 'shoes') {
-                noBg = rotateCanvas(noBg, -35);
+                noBg = rotateCanvas(noBg, -30);
             }
             products[side].noBg = noBg;
             const autoScale = Math.round(calcAutoScale(noBg) * 100);
             scaleSlider.value = scaleNum.value = autoScale;
             offSlider.value = offNum.value = 0;
             offxSlider.value = offxNum.value = 0;
-            drawToPreview(canvas, noBg, autoScale / 100, 0, 0);
+            briSlider.value = briNum.value = 100;
+            drawToPreview(canvas, noBg, autoScale / 100, 0, 0, 100);
             products[side].snapshot = snapshotCanvas(canvas);
             uploadItem.classList.add('has-image');
             schedulePreview();
         } catch (err) {
-            ctx.clearRect(0, 0, PREVIEW_W, PREVIEW_H);
+            ctx.clearRect(0, 0, pw, ph);
             ctx.fillStyle = '#f87171';
-            ctx.fillText('处理失败，请重试', PREVIEW_W / 2, PREVIEW_H / 2);
+            ctx.fillText('处理失败，请重试', pw / 2, ph / 2);
             ctx.textAlign = 'left';
             console.error(err);
         }
@@ -922,6 +975,54 @@ function setupLightbox() {
     renderPreview();
 
     document.getElementById('generateBtn').addEventListener('click', generate);
+
+    // 互换商品
+    document.getElementById('swapBtn').addEventListener('click', () => {
+        // 交换 noBg 和 snapshot
+        [products.A, products.B] = [products.B, products.A];
+
+        // 交换精细调整滑块值
+        ['scaleSlider','scaleNum','offsetSlider','offsetNum','offsetxSlider','offsetxNum','briSlider','briNum'].forEach(cls => {
+            const aEl = document.getElementById(`${cls}A`);
+            const bEl = document.getElementById(`${cls}B`);
+            if (aEl && bEl) {
+                const tmp = aEl.value;
+                aEl.value = bEl.value;
+                bEl.value = tmp;
+            }
+        });
+
+        // 根据交换后是否有图，设置 has-image 样式
+        ['A','B'].forEach(side => {
+            const item = document.getElementById(`uploadItem${side}`);
+            if (products[side].noBg) {
+                item.classList.add('has-image');
+            } else {
+                item.classList.remove('has-image');
+            }
+        });
+
+        // 重新绘制左侧预览
+        ['A','B'].forEach(side => {
+            const canvas = document.getElementById(`previewCanvas${side}`);
+            const noBg = products[side].noBg;
+            if (noBg) {
+                const scale = parseFloat(document.getElementById(`scaleNum${side}`).value) / 100 || 1;
+                const off = parseInt(document.getElementById(`offsetNum${side}`).value) || 0;
+                const offx = parseInt(document.getElementById(`offsetxNum${side}`).value) || 0;
+                const bri = parseInt(document.getElementById(`briNum${side}`).value) || 100;
+                canvas.width = PREVIEW_W; canvas.height = PREVIEW_H;
+                drawToPreview(canvas, noBg, scale, off, offx, bri);
+                products[side].snapshot = snapshotCanvas(canvas);
+            } else {
+                canvas.width = PREVIEW_W; canvas.height = PREVIEW_H;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        });
+
+        schedulePreview();
+    });
 
     document.getElementById('downloadBtn').addEventListener('click', () => {
         const dlBtn = document.getElementById('downloadBtn');
