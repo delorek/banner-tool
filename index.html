@@ -581,9 +581,25 @@ function initCategories() {
     document.querySelectorAll('input[name="category"]').forEach(radio => {
         radio.addEventListener('change', () => {
             currentCat = radio.value;
+            updatePlaceholders();
             schedulePreview();
         });
     });
+}
+
+function updatePlaceholders() {
+    const mainTitle = document.getElementById('mainTitle');
+    const subTitle  = document.getElementById('subTitle');
+    const highlight = document.getElementById('highlightWords');
+    if (currentCat === 'shoes') {
+        mainTitle.placeholder = '520潮鞋心动季';
+        subTitle.placeholder  = '鞋类宠粉 低至1折';
+        highlight.placeholder = '1折';
+    } else {
+        mainTitle.placeholder = '520奢包特惠';
+        subTitle.placeholder  = '最高减450 享12期分期';
+        highlight.placeholder = '450 低至一折';
+    }
 }
 
 // ═══════════════════════════════════════════════════
