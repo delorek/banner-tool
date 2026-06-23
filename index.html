@@ -455,6 +455,80 @@ const products = {
 // 当前选中品类
 let currentCat = 'other';
 
+// 按品类保存/恢复状态
+const categoryState = {};
+
+function saveCategoryState(cat) {
+    const state = {
+        mainTitle: document.getElementById('mainTitle').value,
+        subTitle:  document.getElementById('subTitle').value,
+        highlight: document.getElementById('highlightWords').value,
+        A: { noBg: products.A.noBg, snapshot: products.A.snapshot },
+        B: { noBg: products.B.noBg, snapshot: products.B.snapshot },
+        sliders: {},
+    };
+    ['scaleSlider','scaleNum','offsetSlider','offsetNum','offsetxSlider','offsetxNum','briSlider','briNum'].forEach(cls => {
+        ['A','B'].forEach(side => {
+            const el = document.getElementById(`${cls}${side}`);
+            if (el) state.sliders[`${cls}${side}`] = el.value;
+        });
+    });
+    categoryState[cat] = state;
+}
+
+function restoreCategoryState(cat) {
+    const state = categoryState[cat];
+    if (state) {
+        document.getElementById('mainTitle').value = state.mainTitle || '';
+        document.getElementById('subTitle').value  = state.subTitle  || '';
+        document.getElementById('highlightWords').value = state.highlight || '';
+        products.A = { noBg: state.A.noBg, snapshot: state.A.snapshot };
+        products.B = { noBg: state.B.noBg, snapshot: state.B.snapshot };
+        Object.keys(state.sliders).forEach(key => {
+            const el = document.getElementById(key);
+            if (el) el.value = state.sliders[key];
+        });
+    } else {
+        document.getElementById('mainTitle').value = '';
+        document.getElementById('subTitle').value  = '';
+        document.getElementById('highlightWords').value = '';
+        products.A = { noBg: null, snapshot: null };
+        products.B = { noBg: null, snapshot: null };
+        ['scaleSlider','scaleNum','briSlider','briNum'].forEach(cls => {
+            ['A','B'].forEach(side => {
+                const el = document.getElementById(`${cls}${side}`);
+                if (el) el.value = cls.includes('bri') ? '100' : '100';
+            });
+        });
+        ['offsetSlider','offsetNum','offsetxSlider','offsetxNum'].forEach(cls => {
+            ['A','B'].forEach(side => {
+                const el = document.getElementById(`${cls}${side}`);
+                if (el) el.value = '0';
+            });
+        });
+    }
+
+    // 刷新左侧预览
+    ['A','B'].forEach(side => {
+        const canvas = document.getElementById(`previewCanvas${side}`);
+        const item   = document.getElementById(`uploadItem${side}`);
+        const noBg = products[side].noBg;
+        canvas.width = PREVIEW_W; canvas.height = PREVIEW_H;
+        if (noBg) {
+            item.classList.add('has-image');
+            const scale = parseFloat(document.getElementById(`scaleNum${side}`).value) / 100 || 1;
+            const off   = parseInt(document.getElementById(`offsetNum${side}`).value) || 0;
+            const offx  = parseInt(document.getElementById(`offsetxNum${side}`).value) || 0;
+            const bri   = parseInt(document.getElementById(`briNum${side}`).value) || 100;
+            drawToPreview(canvas, noBg, scale, off, offx, bri);
+            products[side].snapshot = snapshotCanvas(canvas);
+        } else {
+            item.classList.remove('has-image');
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+        }
+    });
+}
+
 // ═══════════════════════════════════════════════════
 //  工具函数
 // ═══════════════════════════════════════════════════
@@ -580,7 +654,12 @@ async function loadAssets() {
 function initCategories() {
     document.querySelectorAll('input[name="category"]').forEach(radio => {
         radio.addEventListener('change', () => {
+            // 保存当前品类状态
+            saveCategoryState(currentCat);
+            // 切换
             currentCat = radio.value;
+            // 恢复目标品类状态（首次则清空）
+            restoreCategoryState(currentCat);
             updatePlaceholders();
             schedulePreview();
         });
