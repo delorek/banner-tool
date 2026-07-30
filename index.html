@@ -529,12 +529,9 @@
 <script type="module">
 import { removeBackground } from 'https://esm.run/@imgly/background-removal@1.7.0';
 
-// 线上环境：模型与 ONNX Runtime 资源随页面同域发布，兼容 GitHub Pages 的仓库子路径。
-// 直接双击 index.html（file://）时，浏览器出于安全限制无法 fetch 本地模型分片，
-// 因此仅在本地文件预览时回退到官方资源；线上发布仍完全使用自行托管资源。
-const BG_ASSET_PUBLIC_PATH = window.location.protocol === 'file:'
-    ? 'https://staticimgly.com/@imgly/background-removal-data/1.7.0/dist/'
-    : new URL('./assets/bg-removal/', document.baseURI).href;
+// 当前发布版本使用 IMG.LY 官方托管的模型资源，避免模型资源未完整上传时造成线上抠图失败。
+// 后续完成资源自托管后，再改回仓库内 assets/bg-removal/ 路径。
+const BG_ASSET_PUBLIC_PATH = 'https://staticimgly.com/@imgly/background-removal-data/1.7.0/dist/';
 
 // ═══════════════════════════════════════════════════
 //  常量 & 状态
