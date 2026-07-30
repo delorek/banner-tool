@@ -807,12 +807,34 @@ function updatePlaceholders() {
 // ═══════════════════════════════════════════════════
 //  AI 抠图
 // ═══════════════════════════════════════════════════
+const BG_REMOVAL_TIMEOUT_MS = 90 * 1000;
+let backgroundModelReady = false;
+
 async function processFile(file) {
     const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
     const hasAlpha = isPng && await checkTransparency(file);
     if (hasAlpha) return loadPngDirect(file);
 
-    const blob = await removeBackground(file, { output: { format: 'image/png', quality: 1 } });
+    const controller = new AbortController();
+    let timeoutId;
+    const removalTask = removeBackground(file, {
+        output: { format: 'image/png', quality: 1 },
+        fetchArgs: { signal: controller.signal },
+    });
+    const timeoutTask = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+            controller.abort();
+            reject(new Error('模型加载超时，请检查网络后重试'));
+        }, BG_REMOVAL_TIMEOUT_MS);
+    });
+
+    let blob;
+    try {
+        blob = await Promise.race([removalTask, timeoutTask]);
+        backgroundModelReady = true;
+    } finally {
+        clearTimeout(timeoutId);
+    }
     return blobToCanvas(blob);
 }
 
@@ -886,6 +908,7 @@ function bindProductUpload(side) {
     const offxNum     = document.getElementById(`offsetxNum${side}`);
     const briSlider   = document.getElementById(`briSlider${side}`);
     const briNum      = document.getElementById(`briNum${side}`);
+    let uploadTaskId = 0;
 
     // 精细调整折叠（阻止冒泡，防止触发 file input）
     advToggle.addEventListener('click', e => {
@@ -912,7 +935,8 @@ function bindProductUpload(side) {
     fileEl.addEventListener('change', async e => {
         const file = e.target.files[0];
         if (!file) return;
-        const isFirstUpload = !products[side].noBg;
+        const taskId = ++uploadTaskId;
+        const isFirstModelLoad = !backgroundModelReady;
 
         // 更新画布尺寸
         const pw = getPreviewW(side), ph = getPreviewH(side);
@@ -927,7 +951,7 @@ function bindProductUpload(side) {
         ctx.font = '14px system-ui';
         ctx.textAlign = 'center';
         ctx.fillText(
-            isFirstUpload ? '处理中，首次加载模型约10秒' : '处理中，加载模型约10秒',
+            isFirstModelLoad ? '处理中，首次加载模型约10秒' : '处理中，加载模型约10秒',
             pw / 2,
             ph / 2
         );
@@ -935,6 +959,7 @@ function bindProductUpload(side) {
 
         try {
             let noBg = await processFile(file);
+            if (taskId !== uploadTaskId) return;
             // 鞋类：按商品分别旋转
             if (currentCat === 'shoes') {
                 noBg = rotateCanvas(noBg, -30);
@@ -949,15 +974,22 @@ function bindProductUpload(side) {
             products[side].snapshot = snapshotCanvas(canvas);
             schedulePreview();
         } catch (err) {
+            if (taskId !== uploadTaskId) return;
             ctx.fillStyle = '#f4f4f4';
             ctx.fillRect(0, 0, pw, ph);
             ctx.fillStyle = '#f87171';
             ctx.textAlign = 'center';
-            ctx.fillText('处理失败，请重试', pw / 2, ph / 2);
+            ctx.fillText(
+                err && err.message === '模型加载超时，请检查网络后重试'
+                    ? '模型加载超时，请检查网络后重试'
+                    : '处理失败，请重试',
+                pw / 2,
+                ph / 2
+            );
             ctx.textAlign = 'left';
             console.error(err);
         } finally {
-            uploadItem.classList.remove('is-processing');
+            if (taskId === uploadTaskId) uploadItem.classList.remove('is-processing');
         }
     });
 
