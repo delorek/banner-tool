@@ -93,6 +93,8 @@
         }
         .upload-item:hover { border-color: #06805c; }
         .upload-item.has-image { border-style: solid; border-color: #c8e8df; }
+        .upload-item.is-processing,
+        .upload-item.is-processing input[type="file"] { cursor: progress; }
         .upload-item input[type="file"] {
             position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
         }
@@ -191,6 +193,12 @@
         }
         .gen-btn:hover { background: #056b4a; }
         .gen-btn:active { background: #044f37; }
+        .gen-btn:disabled,
+        .gen-btn:disabled:hover,
+        .gen-btn:disabled:active {
+            background: #ABDCCA;
+            cursor: not-allowed;
+        }
 
         .dl-btn {
             padding: 13px; background: #313133; color: white;
@@ -458,7 +466,7 @@
 
         <!-- 按钮区 -->
         <div class="btn-row">
-            <button class="gen-btn" id="generateBtn">生成头图</button>
+            <button class="gen-btn" id="generateBtn" disabled>生成头图</button>
             <button class="dl-btn" id="downloadBtn" disabled>下载</button>
         </div>
         </div>
@@ -546,8 +554,8 @@ const products = {
     B: { noBg: null, snapshot: null },
 };
 
-// 当前选中品类
-let currentCat = 'other';
+// 当前选中品类：需由用户显式选择后才能生成或下载头图。
+let currentCat = null;
 
 // 按品类保存/恢复状态
 const categoryState = {};
@@ -753,15 +761,32 @@ function initCategories() {
     document.querySelectorAll('input[name="category"]').forEach(radio => {
         radio.addEventListener('change', () => {
             // 保存当前品类状态
-            saveCategoryState(currentCat);
+            if (currentCat) saveCategoryState(currentCat);
             // 切换
             currentCat = radio.value;
             // 恢复目标品类状态（首次则清空）
             restoreCategoryState(currentCat);
             updatePlaceholders();
+            invalidateBannerDownload();
+            updateBannerActionState();
             schedulePreview();
         });
     });
+}
+
+function hasSelectedBannerCategory() {
+    return Boolean(document.querySelector('input[name="category"]:checked'));
+}
+
+function invalidateBannerDownload() {
+    const dlBtn = document.getElementById('downloadBtn');
+    dlBtn.disabled = true;
+    delete dlBtn._canvas;
+}
+
+function updateBannerActionState() {
+    document.getElementById('generateBtn').disabled = !hasSelectedBannerCategory();
+    if (!hasSelectedBannerCategory()) invalidateBannerDownload();
 }
 
 function updatePlaceholders() {
@@ -887,17 +912,25 @@ function bindProductUpload(side) {
     fileEl.addEventListener('change', async e => {
         const file = e.target.files[0];
         if (!file) return;
+        const isFirstUpload = !products[side].noBg;
 
         // 更新画布尺寸
         const pw = getPreviewW(side), ph = getPreviewH(side);
         canvas.width = pw; canvas.height = ph;
 
         const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, pw, ph);
+        // 首次上传时也先切换到预览态，确保显示灰底 loading，而非默认上传占位。
+        uploadItem.classList.add('has-image', 'is-processing');
+        ctx.fillStyle = '#f4f4f4';
+        ctx.fillRect(0, 0, pw, ph);
         ctx.fillStyle = '#aaa';
         ctx.font = '14px system-ui';
         ctx.textAlign = 'center';
-        ctx.fillText('处理中，加载模型约10秒', pw / 2, ph / 2);
+        ctx.fillText(
+            isFirstUpload ? '处理中，首次加载模型约10秒' : '处理中，加载模型约10秒',
+            pw / 2,
+            ph / 2
+        );
         ctx.textAlign = 'left';
 
         try {
@@ -914,14 +947,17 @@ function bindProductUpload(side) {
             briSlider.value = briNum.value = 100;
             drawToPreview(canvas, noBg, autoScale / 100, 0, 0, 100);
             products[side].snapshot = snapshotCanvas(canvas);
-            uploadItem.classList.add('has-image');
             schedulePreview();
         } catch (err) {
-            ctx.clearRect(0, 0, pw, ph);
+            ctx.fillStyle = '#f4f4f4';
+            ctx.fillRect(0, 0, pw, ph);
             ctx.fillStyle = '#f87171';
+            ctx.textAlign = 'center';
             ctx.fillText('处理失败，请重试', pw / 2, ph / 2);
             ctx.textAlign = 'left';
             console.error(err);
+        } finally {
+            uploadItem.classList.remove('is-processing');
         }
     });
 
@@ -1031,6 +1067,10 @@ async function renderPreview() {
 //  生成头图（触发下载用的完整渲染，复用 renderPreview 结果）
 // ═══════════════════════════════════════════════════
 async function generate() {
+    if (!hasSelectedBannerCategory()) {
+        updateBannerActionState();
+        showStatus('请先选择其他品类或鞋类'); return;
+    }
     if (!products.A.snapshot && !products.B.snapshot) {
         showStatus('请先上传并处理至少一张商品图'); return;
     }
@@ -1043,8 +1083,10 @@ async function generate() {
     const c = inner.querySelector('canvas');
     if (c) {
         const dlBtn = document.getElementById('downloadBtn');
-        dlBtn.disabled = false;
-        dlBtn._canvas = c;
+        if (hasSelectedBannerCategory()) {
+            dlBtn.disabled = false;
+            dlBtn._canvas = c;
+        }
     }
 }
 
@@ -1293,6 +1335,23 @@ function limitNonWhitespaceCharacters(value, maxCharacters) {
     }).join('');
 }
 
+function bindImeSafeInput(element, onCommit) {
+    let isComposing = false;
+
+    element.addEventListener('compositionstart', () => {
+        isComposing = true;
+    });
+    element.addEventListener('compositionend', () => {
+        isComposing = false;
+        onCommit();
+    });
+    element.addEventListener('input', event => {
+        // 中文拼音属于输入法的临时组词状态：不预览、不执行字数截断。
+        if (isComposing || event.isComposing) return;
+        onCommit();
+    });
+}
+
 // ═══════════════════════════════════════════════════
 //  初始化
 // ═══════════════════════════════════════════════════
@@ -1303,6 +1362,7 @@ function limitNonWhitespaceCharacters(value, maxCharacters) {
         console.warn('部分素材加载失败', e);
     }
     initCategories();
+    updateBannerActionState();
     bindProductUpload('A');
     bindProductUpload('B');
     setupCanvasControls();
@@ -1318,13 +1378,14 @@ function limitNonWhitespaceCharacters(value, maxCharacters) {
         document.getElementById(id).addEventListener('input', renderCoupon));
     renderCoupon();
 
-    // 主标题最多 9 个非空白字符；空格可正常输入且不计入限制。
-    document.getElementById('mainTitle').addEventListener('input', event => {
-        event.target.value = limitNonWhitespaceCharacters(event.target.value, 9);
+    // 主标题最多 9 个非空白字符；中文输入法完成选词后再限制并刷新预览。
+    const mainTitleInput = document.getElementById('mainTitle');
+    bindImeSafeInput(mainTitleInput, () => {
+        mainTitleInput.value = limitNonWhitespaceCharacters(mainTitleInput.value, 9);
         schedulePreview();
     });
     ['subTitle', 'highlightWords'].forEach(id => {
-        document.getElementById(id).addEventListener('input', schedulePreview);
+        bindImeSafeInput(document.getElementById(id), schedulePreview);
     });
 
     // 素材加载完后立即渲染底图
@@ -1381,6 +1442,11 @@ function limitNonWhitespaceCharacters(value, maxCharacters) {
     });
 
     document.getElementById('downloadBtn').addEventListener('click', async () => {
+        if (!hasSelectedBannerCategory()) {
+            updateBannerActionState();
+            showStatus('请先选择其他品类或鞋类');
+            return;
+        }
         const dlBtn = document.getElementById('downloadBtn');
         const canvas = dlBtn._canvas;
         if (!canvas) { showStatus('请先生成头图'); return; }
